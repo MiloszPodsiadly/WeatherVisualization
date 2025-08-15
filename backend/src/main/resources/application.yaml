@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/airdb}
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+app:
+  jwt:
+    secret: ${APP_JWT_SECRET:dev-change-me}
+    issuer: ${APP_JWT_ISSUER:weather-visualization}
+    expires-minutes: ${APP_JWT_EXPIRES_MINUTES:60}
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+logging:
+  level:
+    root: INFO
