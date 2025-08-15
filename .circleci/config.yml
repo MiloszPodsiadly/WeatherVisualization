@@ -54,7 +54,7 @@ jobs:
 
       - run:
           name: Build & test (Maven verify)
-          command: mvn -q -B -DskipTests=false verify
+          command: mvn -q -B -Pskip-frontend -DskipTests=false verify
 
       - save_cache:
           key: v1-m2-{{ checksum "pom.xml" }}
