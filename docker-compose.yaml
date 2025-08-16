@@ -17,6 +17,12 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/airdb
+      GOOGLE_CLIENT_ID: "560170984930-k61p89d6gln0oc648mls9utrtnbq716q.apps.googleusercontent.com"
+      GOOGLE_CLIENT_SECRET: "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"
+      GITHUB_CLIENT_ID: "Ov23livtYKFNgp2NxykW"
+      GITHUB_CLIENT_SECRET: "249cdb36ec9a1decec0b9e51bd74b82d48841e73"
+      FRONTEND_SUCCESS_URL: "http://localhost:80/"
+      FRONTEND_FAILURE_URL: "http://localhost:80/login?error"
       APP_JWT_SECRET: "super-long-random-secret-change-me"
       APP_JWT_ISSUER: "weather-visualization"
       APP_JWT_EXPIRES_MINUTES: "60"
