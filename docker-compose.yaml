@@ -14,12 +14,20 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: backend
+    env_file:
+      - .env
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/airdb
-      APP_JWT_SECRET: "super-long-random-secret-change-me"
-      APP_JWT_ISSUER: "weather-visualization"
-      APP_JWT_EXPIRES_MINUTES: "60"
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      FRONTEND_SUCCESS_URL: ${FRONTEND_SUCCESS_URL}
+      FRONTEND_FAILURE_URL: ${FRONTEND_FAILURE_URL}
+      APP_JWT_SECRET: ${APP_JWT_SECRET}
+      APP_JWT_ISSUER: ${APP_JWT_ISSUER}
+      APP_JWT_EXPIRES_MINUTES: ${APP_JWT_EXPIRES_MINUTES}
     depends_on:
       - mongo
     ports:
@@ -28,7 +36,6 @@ services:
   frontend:
     build:
       context: frontend
-      dockerfile: Dockerfile
     container_name: frontend
     depends_on:
       - backend

@@ -1,19 +1,47 @@
 server:
   port: 8080
+  forward-headers-strategy: framework
 
 spring:
+  application:
+    name: weather-visualization-backend
+
   data:
     mongodb:
       uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/airdb}
+
   jackson:
     serialization:
       write-dates-as-timestamps: false
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            scope: [ "openid", "profile", "email" ]
+          github:
+            client-id: ${GITHUB_CLIENT_ID:}
+            client-secret: ${GITHUB_CLIENT_SECRET:}
+            scope: [ "user:email" ]
+        provider:
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
+            user-name-attribute: id
 
 app:
   jwt:
     secret: ${APP_JWT_SECRET:dev-change-me}
     issuer: ${APP_JWT_ISSUER:weather-visualization}
     expires-minutes: ${APP_JWT_EXPIRES_MINUTES:60}
+
+  security:
+    frontend-success-url: ${FRONTEND_SUCCESS_URL:http://localhost/}
+    frontend-failure-url: ${FRONTEND_FAILURE_URL:http://localhost/login?error}
 
 springdoc:
   api-docs:
@@ -26,6 +54,21 @@ management:
     web:
       exposure:
         include: "health,info"
+
 logging:
   level:
     root: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://mongo:27017/airdb}
+
+app:
+  security:
+    frontend-success-url: ${FRONTEND_SUCCESS_URL:http://localhost:8080/}
+    frontend-failure-url: ${FRONTEND_FAILURE_URL:http://localhost:8080/login?error}
