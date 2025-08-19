@@ -1,6 +1,62 @@
-.wrap { font-family: system-ui, sans-serif; margin: 2rem; }
-button { padding:.6rem 1rem; border:0; border-radius:.5rem; margin:.25rem; cursor:pointer; }
-.google { background:#4285F4; color:#fff; }
-.github { background:#333; color:#fff; }
-.logout { background:#e53e3e; color:#fff; }
-pre { background:#111; color:#eee; padding:1rem; border-radius:.5rem; overflow:auto; }
+.landing {
+  max-width: 600px;
+  margin: 80px auto;
+  text-align: center;
+  color: #1a237e;
+
+  h1 {
+    font-size: 2.4rem;
+    margin-bottom: 12px;
+
+    span {
+      color: #3949ab;
+    }
+  }
+
+  p {
+    margin-bottom: 24px;
+    font-size: 1.1rem;
+    color: #444;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+    transition: background 0.2s ease;
+
+    &.github {
+      background: #24292f;
+      &:hover {
+        background: #000;
+      }
+    }
+
+    &.google {
+      background: #db4437;
+      &:hover {
+        background: #c23321;
+      }
+    }
+
+    &.continue {
+      background: #1a237e;
+      margin-top: 20px;
+      &:hover {
+        background: #0d1549;
+      }
+    }
+  }
+}

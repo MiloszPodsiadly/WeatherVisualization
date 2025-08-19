@@ -1,0 +1,14 @@
+<mat-form-field appearance="outline" class="w-100">
+  <mat-label>Wpisz nazwę miasta</mat-label>
+  <input matInput [formControl]="q" placeholder="np. Warszawa, Kraków..." />
+</mat-form-field>
+
+<div *ngIf="loading">Szukam…</div>
+
+<mat-list *ngIf="results.length">
+  <mat-list-item *ngFor="let r of results" (click)="open(r)" style="cursor:pointer">
+    <mat-icon matListItemIcon>location_city</mat-icon>
+    <div matListItemTitle>{{ r.name }} <small *ngIf="r.country">({{ r.country }})</small></div>
+    <div matListItemLine>{{ r.admin }}</div>
+  </mat-list-item>
+</mat-list>

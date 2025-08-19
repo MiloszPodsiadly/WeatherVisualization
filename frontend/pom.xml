@@ -35,6 +35,7 @@
     </build>
 
     <profiles>
+        <!-- One-time scaffolding, if you ever need to create the Angular app -->
         <profile>
             <id>bootstrap-angular</id>
             <build>
@@ -53,12 +54,16 @@
                             <execution>
                                 <id>install-node-and-npm</id>
                                 <phase>generate-resources</phase>
-                                <goals><goal>install-node-and-npm</goal></goals>
+                                <goals>
+                                    <goal>install-node-and-npm</goal>
+                                </goals>
                             </execution>
                             <execution>
                                 <id>npm-create-angular</id>
                                 <phase>generate-resources</phase>
-                                <goals><goal>npm</goal></goals>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
                                 <configuration>
                                     <arguments>create @angular@17 ${angular.dir} -- --routing --style=scss --skip-git</arguments>
                                 </configuration>
@@ -69,6 +74,7 @@
             </build>
         </profile>
 
+        <!-- Normal frontend build -->
         <profile>
             <id>frontend-build</id>
             <activation>
@@ -87,23 +93,42 @@
                             <installDirectory>${project.basedir}/${angular.dir}/node</installDirectory>
                             <nodeVersion>${node.version}</nodeVersion>
                             <npmVersion>${npm.version}</npmVersion>
+                            <environmentVariables>
+                                <!-- Prevent OOMs in big Angular/webpack builds -->
+                                <NODE_OPTIONS>--max_old_space_size=4096</NODE_OPTIONS>
+                                <!-- Don’t fail on engines field mismatches -->
+                                <npm_config_engine_strict>false</npm_config_engine_strict>
+                                <!-- Smooth over legacy peer dep constraints (optional but helpful) -->
+                                <npm_config_legacy_peer_deps>true</npm_config_legacy_peer_deps>
+                                <!-- Avoid CI turning warnings into errors -->
+                                <CI>false</CI>
+                            </environmentVariables>
                         </configuration>
                         <executions>
                             <execution>
                                 <id>install-node-and-npm</id>
-                                <goals><goal>install-node-and-npm</goal></goals>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>install-node-and-npm</goal>
+                                </goals>
                             </execution>
                             <execution>
                                 <id>npm-ci</id>
-                                <goals><goal>npm</goal></goals>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
                                 <configuration>
+                                    <!-- Use ci if package-lock.json is present; otherwise switch to "install" -->
                                     <arguments>ci --no-audit --fund=false --verbose</arguments>
                                 </configuration>
                             </execution>
                             <execution>
                                 <id>npm-build</id>
                                 <phase>prepare-package</phase>
-                                <goals><goal>npm</goal></goals>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
                                 <configuration>
                                     <arguments>run build -- --configuration production</arguments>
                                 </configuration>
@@ -114,6 +139,7 @@
             </build>
         </profile>
 
+        <!-- Toggle this to skip frontend completely -->
         <profile>
             <id>skip-frontend</id>
             <build>
@@ -122,9 +148,18 @@
                         <groupId>com.github.eirslett</groupId>
                         <artifactId>frontend-maven-plugin</artifactId>
                         <executions>
-                            <execution><id>install-node-and-npm</id><phase>none</phase></execution>
-                            <execution><id>npm-ci</id><phase>none</phase></execution>
-                            <execution><id>npm-build</id><phase>none</phase></execution>
+                            <execution>
+                                <id>install-node-and-npm</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>npm-ci</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>npm-build</id>
+                                <phase>none</phase>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>

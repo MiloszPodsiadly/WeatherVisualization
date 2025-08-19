@@ -1,0 +1,10 @@
+<div class="wrap">
+  <h1 *ngIf="(auth.me$ | async) as me">Welcome, {{ me.displayName || me.email }} 👋</h1>
+  <p>Choose where to start:</p>
+
+  <div class="grid">
+    <a class="card" routerLink="/search">🔎 Search city</a>
+    <a class="card" [routerLink]="lastCityLink">🏙 City dashboard</a>
+    <a class="card" [routerLink]="lastHistoryLink">📈 History &amp; charts</a>
+  </div>
+</div>

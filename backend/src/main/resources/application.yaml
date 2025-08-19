@@ -70,5 +70,5 @@ spring:
 
 app:
   security:
-    frontend-success-url: ${FRONTEND_SUCCESS_URL:http://localhost:8080/}
-    frontend-failure-url: ${FRONTEND_FAILURE_URL:http://localhost:8080/login?error}
+    frontend-success-url: /welcome
+    frontend-failure-url: /login?error
