@@ -25,6 +25,8 @@
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>1.15.0</version>
                 <configuration>
+                    <workingDirectory>${angular.dir}</workingDirectory>
+                    <installDirectory>${project.basedir}/${angular.dir}/node</installDirectory>
                     <nodeVersion>${node.version}</nodeVersion>
                     <npmVersion>${npm.version}</npmVersion>
                 </configuration>
@@ -41,6 +43,12 @@
                         <groupId>com.github.eirslett</groupId>
                         <artifactId>frontend-maven-plugin</artifactId>
                         <version>1.15.0</version>
+                        <configuration>
+                            <workingDirectory>${angular.dir}</workingDirectory>
+                            <installDirectory>${project.basedir}/${angular.dir}/node</installDirectory>
+                            <nodeVersion>${node.version}</nodeVersion>
+                            <npmVersion>${npm.version}</npmVersion>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>install-node-and-npm</id>
@@ -74,20 +82,22 @@
                         <groupId>com.github.eirslett</groupId>
                         <artifactId>frontend-maven-plugin</artifactId>
                         <version>1.15.0</version>
+                        <configuration>
+                            <workingDirectory>${angular.dir}</workingDirectory>
+                            <installDirectory>${project.basedir}/${angular.dir}/node</installDirectory>
+                            <nodeVersion>${node.version}</nodeVersion>
+                            <npmVersion>${npm.version}</npmVersion>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>install-node-and-npm</id>
                                 <goals><goal>install-node-and-npm</goal></goals>
-                                <configuration>
-                                    <workingDirectory>${angular.dir}</workingDirectory>
-                                </configuration>
                             </execution>
                             <execution>
                                 <id>npm-ci</id>
                                 <goals><goal>npm</goal></goals>
                                 <configuration>
-                                    <arguments>ci</arguments>
-                                    <workingDirectory>${angular.dir}</workingDirectory>
+                                    <arguments>ci --no-audit --fund=false --verbose</arguments>
                                 </configuration>
                             </execution>
                             <execution>
@@ -96,7 +106,6 @@
                                 <goals><goal>npm</goal></goals>
                                 <configuration>
                                     <arguments>run build -- --configuration production</arguments>
-                                    <workingDirectory>${angular.dir}</workingDirectory>
                                 </configuration>
                             </execution>
                         </executions>
