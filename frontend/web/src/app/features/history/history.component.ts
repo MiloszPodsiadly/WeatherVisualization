@@ -32,7 +32,6 @@ export class HistoryComponent implements OnInit {
   to: Date = new Date();
   interval = '1h';
 
-  // Allow nulls in the series generic
   data: ChartConfiguration<'line', (number | ScatterDataPoint | null)[]>['data'] = { datasets: [] };
   options: ChartConfiguration<'line'>['options'] = {
     responsive: true,

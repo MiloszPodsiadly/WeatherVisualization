@@ -11,16 +11,16 @@ import org.springframework.data.mongodb.core.index.Indexed;
 public class Location {
 
     @Id
-    private String id;            // Mongo ID (ObjectId jako String)
+    private String id;
 
     @Indexed
-    private String name;          // "Warszawa"
+    private String name;
 
-    private String admin;         // "Mazowieckie" (opcjonalne)
+    private String admin;
 
     @Indexed
-    private String country;       // "PL"
+    private String country;
 
-    private Double latitude;      // 52.2297
-    private Double longitude;     // 21.0122
+    private Double latitude;
+    private Double longitude;
 }

@@ -23,13 +23,12 @@ export class CityComponent implements OnInit {
   current?: WeatherCurrentDto;
   history?: WeatherHistoryResponseDto;
 
-  // Note the data generic: (number | ScatterDataPoint | null)[]
   lineData: ChartConfiguration<'line', (number | ScatterDataPoint | null)[]>['data'] = { datasets: [] };
   lineOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true,
     parsing: false,
     scales: {
-      x: { type: 'time' }, // requires `import 'chartjs-adapter-date-fns'` in your bootstrap
+      x: { type: 'time' },
       y: { ticks: { callback: v => `${v}°C` } }
     }
   };
@@ -45,7 +44,6 @@ export class CityComponent implements OnInit {
       .subscribe(res => {
         this.history = res;
 
-        // Build array with either a valid point or null (NOT { y: null })
         const points: (ScatterDataPoint | null)[] = res.points.map(p => {
           const y = p.temperature;
           return (y == null)

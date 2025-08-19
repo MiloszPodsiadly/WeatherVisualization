@@ -1,12 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { NgIf, AsyncPipe } from '@angular/common';   // ⬅️ DODAJ AsyncPipe
+import { NgIf, AsyncPipe } from '@angular/common';
 import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgIf, AsyncPipe], // ⬅️ DODAJ AsyncPipe
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgIf, AsyncPipe],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
@@ -18,7 +18,6 @@ export class AppComponent implements OnInit {
   me$ = this.auth.me$;
 
   ngOnInit(): void {
-    // Przy starcie aplikacji sprawdź /api/me (nie blokuje renderu)
     this.auth.refreshMe().subscribe(me =>
       this.userName = me?.displayName || me?.email || null
     );

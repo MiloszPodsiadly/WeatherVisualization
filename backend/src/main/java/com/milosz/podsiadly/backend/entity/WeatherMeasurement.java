@@ -16,18 +16,18 @@ public class WeatherMeasurement {
     private String id;
 
     @Indexed
-    private String locationId;      // referencja do Location._id
+    private String locationId;
 
     @Indexed
-    private Instant recordedAt;     // znacznik czasu próbki (UTC)
+    private Instant recordedAt;
 
-    private Double temperature;     // °C
-    private Double humidity;        // %
-    private Double pressure;        // hPa
-    private Double windSpeed;       // m/s
-    private Double windDirection;   // stopnie (0–360)
-    private Double precipitation;   // mm
-    private Double cloudCover;      // %
+    private Double temperature;
+    private Double humidity;
+    private Double pressure;
+    private Double windSpeed;
+    private Double windDirection;
+    private Double precipitation;
+    private Double cloudCover;
 
     private String source;          // np. "OPEN_METEO"
 }

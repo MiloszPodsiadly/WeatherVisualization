@@ -6,7 +6,7 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-welcome',
   standalone: true,
-  imports: [RouterLink, NgIf, AsyncPipe], // <-- include AsyncPipe
+  imports: [RouterLink, NgIf, AsyncPipe],
   templateUrl: './welcome.component.html',
   styleUrls: ['./welcome.component.scss']
 })

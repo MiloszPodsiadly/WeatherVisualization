@@ -16,10 +16,6 @@ public class LocationsController {
         this.service = service;
     }
 
-    /**
-     * Szukanie miasta po nazwie w cache/Mongo lub w Open-Meteo.
-     * Przykład: GET /api/locations/search?query=Warszawa
-     */
     @GetMapping("/search")
     public List<LocationDto> search(
             @RequestParam String query,

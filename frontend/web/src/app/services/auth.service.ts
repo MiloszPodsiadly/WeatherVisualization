@@ -16,9 +16,8 @@ export class AuthService {
 
   private _me$ = new BehaviorSubject<MeDto | null>(null);
   me$ = this._me$.asObservable();
-  isLoggedIn$ = this.me$.pipe(tap()); // alias, można dodać map(Boolean)
+  isLoggedIn$ = this.me$.pipe(tap());
 
-  /** Sprawdź /api/me i ustaw stan (wywołuj przy starcie aplikacji i w guardzie). */
   refreshMe(): Observable<MeDto | null> {
     return this.http.get<MeDto>('/api/me').pipe(
       tap(me => {
@@ -45,7 +44,6 @@ export class AuthService {
       .pipe(/* unchanged tap/catchError */);
   }
 
-  /** Po powrocie z OAuth przekieruj na returnUrl (o ile zalogowany). */
   afterOAuthRedirect() {
     this.refreshMe().subscribe(me => {
       if (me) {

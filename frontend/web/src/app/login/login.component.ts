@@ -18,7 +18,6 @@ export class LoginComponent implements OnInit {
   meData: any = null;
 
   ngOnInit() {
-    // after OAuth redirect – refresh and redirect if logged
     const ret =
       this.route.snapshot.queryParamMap.get('returnUrl') ||
       localStorage.getItem('returnUrl') ||

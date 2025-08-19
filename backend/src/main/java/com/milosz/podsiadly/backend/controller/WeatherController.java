@@ -20,21 +20,12 @@ public class    WeatherController {
         this.locationService = locationService;
     }
 
-    /**
-     * Bieżąca pogoda dla danego locationId
-     * Przykład: GET /api/weather/current?locationId=123
-     */
     @GetMapping("/current")
     public WeatherCurrentDto current(@RequestParam String locationId) {
         var loc = locationService.require(locationId);
         return weatherService.current(loc);
     }
 
-    /**
-     * Historia pogody dla danego locationId w zadanym przedziale czasu
-     * Przykład:
-     * GET /api/weather/history?locationId=123&from=2025-08-01T00:00:00Z&to=2025-08-02T00:00:00Z&interval=1h
-     */
     @GetMapping("/history")
     public WeatherHistoryResponseDto history(
             @RequestParam String locationId,
