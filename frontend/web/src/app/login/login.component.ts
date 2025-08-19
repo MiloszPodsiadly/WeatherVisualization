@@ -1,53 +1,39 @@
-import { Component, OnInit } from '@angular/core';
-import { ApiService } from '../api.service';
-import { NgIf, JsonPipe } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+import { NgIf } from '@angular/common';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  imports: [NgIf, JsonPipe],
+  imports: [NgIf, RouterLink],
 })
 export class LoginComponent implements OnInit {
-  meData: any = null;
-  loading = false;
-  error: string | null = null;
+  private auth = inject(AuthService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
-  constructor(private api: ApiService) {}
+  meData: any = null;
 
   ngOnInit() {
-    this.checkMe();
+    const ret =
+      this.route.snapshot.queryParamMap.get('returnUrl') ||
+      localStorage.getItem('returnUrl') ||
+      '/welcome';
+
+    this.auth.refreshMe().subscribe(me => {
+      this.meData = me;
+      if (me) this.router.navigateByUrl(ret);
+    });
   }
 
   loginGoogle() {
-    location.href = 'http://localhost:8080/oauth2/authorization/google';
+    this.auth.loginGoogle('/welcome');
   }
 
   loginGithub() {
-    location.href = 'http://localhost:8080/oauth2/authorization/github';
-  }
-
-
-  whoAmI() { this.checkMe(true); }
-
-  private checkMe(showErrors = false) {
-    this.loading = true; this.error = null;
-    this.api.me().subscribe({
-      next: d => { this.meData = d; this.loading = false; },
-      error: e => {
-        this.loading = false;
-        this.meData = null;
-        if (showErrors && e?.status !== 401) this.error = e?.message ?? 'Error';
-      }
-    });
-  }
-
-  doLogout() {
-    this.loading = true;
-    this.api.logout().subscribe({
-      next: () => { this.loading = false; this.meData = null; location.assign('/'); },
-      error: () => { this.loading = false; location.assign('/'); }
-    });
+    this.auth.loginGithub('/welcome');
   }
 }

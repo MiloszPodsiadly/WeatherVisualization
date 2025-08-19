@@ -1,0 +1,23 @@
+<ng-container *ngIf="current as c">
+  <mat-card class="mb">
+    <mat-card-title>{{ c.location.name }} – teraz</mat-card-title>
+    <mat-card-content class="grid">
+      <div><strong>Temp:</strong> {{ c.data.temperature ?? '—' }} °C</div>
+      <div><strong>Wilgotność:</strong> {{ c.data.humidity ?? '—' }} %</div>
+      <div><strong>Ciśnienie:</strong> {{ c.data.pressure ?? '—' }} hPa</div>
+      <div><strong>Wiatr:</strong> {{ c.data.windSpeed ?? '—' }} m/s</div>
+      <div><strong>Opad:</strong> {{ c.data.precipitation ?? '—' }} mm</div>
+      <div><strong>Zachmurzenie:</strong> {{ c.data.cloudCover ?? '—' }} %</div>
+    </mat-card-content>
+    <mat-card-actions>
+      <a mat-button [routerLink]="['/history', c.location.id]">Pełna historia</a>
+    </mat-card-actions>
+  </mat-card>
+</ng-container>
+
+<mat-card *ngIf="history">
+  <mat-card-title>Ostatnie 24h – temperatura</mat-card-title>
+  <mat-card-content>
+    <canvas baseChart [data]="lineData" [options]="lineOptions" chartType="line"></canvas>
+  </mat-card-content>
+</mat-card>

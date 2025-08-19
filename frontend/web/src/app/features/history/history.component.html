@@ -1,0 +1,36 @@
+<mat-card class="mb">
+  <mat-card-title>Filtry</mat-card-title>
+  <mat-card-content class="filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Od</mat-label>
+      <input matInput [matDatepicker]="dp1" [(ngModel)]="from">
+      <mat-datepicker-toggle matSuffix [for]="dp1"></mat-datepicker-toggle>
+      <mat-datepicker #dp1></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Do</mat-label>
+      <input matInput [matDatepicker]="dp2" [(ngModel)]="to">
+      <mat-datepicker-toggle matSuffix [for]="dp2"></mat-datepicker-toggle>
+      <mat-datepicker #dp2></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Interwał</mat-label>
+      <select matNativeControl [(ngModel)]="interval">
+        <option value="1h">1h</option>
+        <option value="3h">3h</option>
+        <option value="1d">1d</option>
+      </select>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="load()">Pokaż</button>
+  </mat-card-content>
+</mat-card>
+
+<mat-card>
+  <mat-card-title>Historia – temperatura / wilgotność / opady</mat-card-title>
+  <mat-card-content>
+    <canvas baseChart [data]="data" [options]="options" chartType="line"></canvas>
+  </mat-card-content>
+</mat-card>

@@ -1,20 +1,13 @@
-<div class="wrap">
-  <h1 *ngIf="!meData">Welcome</h1>
-  <h1 *ngIf="meData">Welcome, {{ meData.displayName || meData.email || 'user' }} 👋</h1>
+<div class="landing">
+  <h1>Welcome to <span>WeatherVisualization</span></h1>
+  <p>Please sign in to explore search, charts and history.</p>
 
-  <div *ngIf="loading">Loading…</div>
-  <div *ngIf="error">Error: {{ error }}</div>
-
-  <div class="buttons" *ngIf="!loading && !meData">
-    <button (click)="loginGithub()">Login with GitHub</button>
-    <button (click)="loginGoogle()">Login with Google</button>
-    <button (click)="whoAmI()">Call /api/me</button>
+  <div class="actions" *ngIf="!meData; else already">
+    <button class="btn github" (click)="loginGithub()">Login with GitHub</button>
+    <button class="btn google" (click)="loginGoogle()">Login with Google</button>
   </div>
 
-  <div *ngIf="!loading && meData">
-    <button (click)="doLogout()">Logout</button>
-    <button (click)="whoAmI()">Refresh /api/me</button>
-    <h3>Your /api/me:</h3>
-    <pre>{{ meData | json }}</pre>
-  </div>
+  <ng-template #already>
+    <a routerLink="/welcome" class="btn continue">Continue</a>
+  </ng-template>
 </div>
