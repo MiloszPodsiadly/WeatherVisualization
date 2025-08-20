@@ -1,14 +1,80 @@
-<mat-form-field appearance="outline" class="w-100">
-  <mat-label>Wpisz nazwę miasta</mat-label>
-  <input matInput [formControl]="q" placeholder="np. Warszawa, Kraków..." />
-</mat-form-field>
+<div class="wrap">
+  <h1>Search city</h1>
 
-<div *ngIf="loading">Szukam…</div>
+  <mat-form-field appearance="outline" class="search-field" floatLabel="auto">
+    <mat-icon matPrefix aria-hidden="true">search</mat-icon>
 
-<mat-list *ngIf="results.length">
-  <mat-list-item *ngFor="let r of results" (click)="open(r)" style="cursor:pointer">
-    <mat-icon matListItemIcon>location_city</mat-icon>
-    <div matListItemTitle>{{ r.name }} <small *ngIf="r.country">({{ r.country }})</small></div>
-    <div matListItemLine>{{ r.admin }}</div>
-  </mat-list-item>
-</mat-list>
+    <input
+      matInput
+      [formControl]="q"
+      [matAutocomplete]="auto"
+      placeholder="Type city name (e.g. Warszawa)"
+      inputmode="search"
+      autocomplete="off"
+      (keydown)="onKeydown($event)"
+      (keyup.enter)="searchNow()"
+      aria-label="Search city" />
+
+    <button type="button" mat-icon-button matSuffix aria-label="Run search" (click)="searchNow()">
+      <mat-icon>arrow_forward</mat-icon>
+    </button>
+
+    <mat-progress-spinner
+      *ngIf="loading"
+      class="spinner"
+      diameter="20"
+      mode="indeterminate"
+      aria-label="Loading">
+    </mat-progress-spinner>
+  </mat-form-field>
+
+  <mat-autocomplete
+    #auto="matAutocomplete"
+    [displayWith]="displayLoc"
+    [panelWidth]="'match-input'"
+    (optionSelected)="selectSuggestion($event.option.value)">
+    <mat-option *ngFor="let s of suggestions" [value]="s.name">
+      {{ s.name }} <small *ngIf="s.admin">• {{ s.admin }}</small> — {{ s.country }}
+    </mat-option>
+  </mat-autocomplete>
+
+  <div class="recent" *ngIf="recents.length">
+    <span class="label">Recent:</span>
+    <mat-chip-set aria-label="Recent cities">
+      <mat-chip *ngFor="let r of recents" (click)="openCity(r)" clickable>
+        {{ r.name }} <small *ngIf="r.admin">&nbsp;• {{ r.admin }}</small> — {{ r.country }}
+      </mat-chip>
+    </mat-chip-set>
+  </div>
+
+  <div class="empty" *ngIf="!results.length && !loading && !error">
+    Start typing to search for a city.
+  </div>
+
+  <div class="cards" *ngIf="results.length">
+    <mat-card class="city" *ngFor="let loc of results">
+      <mat-card-title>{{ loc.name }}</mat-card-title>
+      <mat-card-subtitle>
+        <span *ngIf="loc.admin">{{ loc.admin }} • </span>{{ loc.country }}
+      </mat-card-subtitle>
+
+      <mat-card-content>
+        <div class="coords">
+          <mat-icon aria-hidden="true">place</mat-icon>
+          <span>{{ loc.latitude | number:'1.4-4' }}, {{ loc.longitude | number:'1.4-4' }}</span>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-stroked-button color="primary" (click)="openCity(loc)">
+          <mat-icon>dashboard</mat-icon>&nbsp;Dashboard
+        </button>
+        <button mat-stroked-button (click)="openHistory(loc)">
+          <mat-icon>show_chart</mat-icon>&nbsp;History
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <p class="error" *ngIf="error" role="alert">{{ error }}</p>
+</div>

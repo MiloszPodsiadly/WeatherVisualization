@@ -1,1 +1,30 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+$primary: mat.define-palette(mat.$indigo-palette);
+$accent:  mat.define-palette(mat.$blue-palette, A200, A100, A400);
+$warn:    mat.define-palette(mat.$red-palette);
+
+$theme: mat.define-light-theme((
+  color: (
+    primary: $primary,
+    accent: $accent,
+    warn: $warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+@include mat.all-component-themes($theme);
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Roboto, Arial, sans-serif;
+  background: #f4f6fb;
+  color: #111827;
+}
+
+.mdc-notched-outline__leading,
+.mdc-notched-outline__notch,
+.mdc-notched-outline__trailing {
+  border-width: 1px !important;
+}
