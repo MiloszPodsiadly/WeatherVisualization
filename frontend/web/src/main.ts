@@ -5,7 +5,6 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
-
 import { Chart, TimeScale, LinearScale, LineElement, PointElement, Filler, Tooltip, Legend } from 'chart.js';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import 'chartjs-adapter-date-fns';
