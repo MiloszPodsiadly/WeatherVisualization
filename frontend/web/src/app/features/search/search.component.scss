@@ -1,1 +1,46 @@
-.w-100 { width: 100%; max-width: 640px; display: block; }
+.wrap {
+  max-width: 980px;
+  margin: 28px auto;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+h1 {
+  font-weight: 700;
+  margin: 6px 0 18px;
+  font-size: clamp(1.25rem, 1.1rem + 1vw, 1.75rem);
+  letter-spacing: 0.2px;
+}
+
+.search-field {
+  width: 100%;
+  max-width: 720px;
+  font-size: 1.06rem;
+
+  .spinner { position: absolute; right: 52px; top: 12px; }
+}
+
+.recent { margin: 12px 0 8px; display: flex; align-items: center; gap: 8px;
+  .label { color: #666; font-size: 0.95rem; }
+  mat-chip { cursor: pointer; font-size: 0.95rem; }
+}
+
+.empty { color: #666; margin: 22px 0; font-size: 0.98rem; }
+
+.cards {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.city {
+  transition: box-shadow .2s ease-in-out, transform .06s ease-in-out;
+  mat-card-title { font-weight: 700; }
+  .coords { display: flex; align-items: center; gap: 6px; color: #555; }
+  mat-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  &:hover { box-shadow: 0 4px 14px rgba(0,0,0,.14); }
+  &:active { transform: translateY(1px); }
+}
+
+.error { color: #c62828; margin-top: 12px; }
