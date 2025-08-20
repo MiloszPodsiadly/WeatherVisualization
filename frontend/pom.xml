@@ -28,14 +28,12 @@
                     <workingDirectory>${angular.dir}</workingDirectory>
                     <installDirectory>${project.basedir}/${angular.dir}/node</installDirectory>
                     <nodeVersion>${node.version}</nodeVersion>
-                    <npmVersion>${npm.version}</npmVersion>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
     <profiles>
-        <!-- One-time scaffolding, if you ever need to create the Angular app -->
         <profile>
             <id>bootstrap-angular</id>
             <build>
@@ -48,7 +46,6 @@
                             <workingDirectory>${angular.dir}</workingDirectory>
                             <installDirectory>${project.basedir}/${angular.dir}/node</installDirectory>
                             <nodeVersion>${node.version}</nodeVersion>
-                            <npmVersion>${npm.version}</npmVersion>
                         </configuration>
                         <executions>
                             <execution>
@@ -74,7 +71,6 @@
             </build>
         </profile>
 
-        <!-- Normal frontend build -->
         <profile>
             <id>frontend-build</id>
             <activation>
@@ -92,15 +88,10 @@
                             <workingDirectory>${angular.dir}</workingDirectory>
                             <installDirectory>${project.basedir}/${angular.dir}/node</installDirectory>
                             <nodeVersion>${node.version}</nodeVersion>
-                            <npmVersion>${npm.version}</npmVersion>
                             <environmentVariables>
-                                <!-- Prevent OOMs in big Angular/webpack builds -->
                                 <NODE_OPTIONS>--max_old_space_size=4096</NODE_OPTIONS>
-                                <!-- Don’t fail on engines field mismatches -->
                                 <npm_config_engine_strict>false</npm_config_engine_strict>
-                                <!-- Smooth over legacy peer dep constraints (optional but helpful) -->
                                 <npm_config_legacy_peer_deps>true</npm_config_legacy_peer_deps>
-                                <!-- Avoid CI turning warnings into errors -->
                                 <CI>false</CI>
                             </environmentVariables>
                         </configuration>
@@ -119,7 +110,6 @@
                                     <goal>npm</goal>
                                 </goals>
                                 <configuration>
-                                    <!-- Use ci if package-lock.json is present; otherwise switch to "install" -->
                                     <arguments>ci --no-audit --fund=false --verbose</arguments>
                                 </configuration>
                             </execution>
@@ -139,7 +129,6 @@
             </build>
         </profile>
 
-        <!-- Toggle this to skip frontend completely -->
         <profile>
             <id>skip-frontend</id>
             <build>
