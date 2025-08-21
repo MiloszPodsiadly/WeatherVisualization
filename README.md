@@ -1,13 +1,11 @@
-# 🌦️ Weather Visualization – Full Stack Application
-See the weather, understand the world  
+# 🌦️ Weather Visualization – Full-Stack Application
 
-Weather Visualization is a business-grade platform for **interactive weather exploration and visualization**, built with **Angular**, **Spring Boot 3.5.4**, and **MongoDB**.  
-It combines secure authentication, scalable design, and real-time geocoding integration into a modern, cloud-ready solution.
+Weather Visualization is full-stack educational project, built with **Angular**, **Spring Boot**, and **MongoDB**. It demonstrates secure authentication, scalable design, integration with external APIs and interactive visualization. This application is fully containerized with Docker and ready for deployment to cloud environments.
 
 ---
 
 ## 🧠 Executive Summary
-Weather Visualization is designed as a **distributed, cloud-ready full stack application**.  
+Weather Visualization is designed as a **distributed, dockerized full stack application**.  
 It integrates **location search, historical and real-time weather data, and OAuth2-based identity** into a cohesive, high-performance platform.
 
 The platform emphasizes:  
@@ -29,13 +27,13 @@ The platform emphasizes:
 
 ## 🔗 Service Portfolio
 
-| Service         | Responsibility                                 | Tech Highlights |
-|-----------------|-------------------------------------------------|-----------------|
-| **ui**          | Angular 17 frontend for weather visualizations | OAuth2-protected routes, charts, responsive UI |
-| **backend**     | Spring Boot 3.5.4 API & business logic         | Spring Security OAuth2, REST endpoints |
-| **auth**        | Google & GitHub OAuth2 login, session storage  | Entities: `AppUser`, `ExternalIdentity`, `AuthProvider`, `UserStatus` |
-| **location**    | Geocoding via Open-Meteo, cached in MongoDB    | REST client, caching layer |
-| **database**    | Weather & location persistence                 | MongoDB, Spring Data |
+| Service      | Responsibility                                 | Tech Highlights |
+|--------------|-------------------------------------------------|-----------------|
+| **frontend** | Angular 17 frontend for weather visualizations | OAuth2-protected routes, charts, responsive UI |
+| **backend**  | Spring Boot 3.5.4 API & business logic         | Spring Security OAuth2, REST endpoints |
+| **auth**     | Google & GitHub OAuth2 login, session storage  | Entities: `AppUser`, `ExternalIdentity`, `AuthProvider`, `UserStatus` |
+| **location** | Geocoding via Open-Meteo, cached in MongoDB    | REST client, caching layer |
+| **database** | Weather & location persistence                 | MongoDB, Spring Data |
 
 ---
 
@@ -129,16 +127,25 @@ WeatherVisualization/
 │   │   
 │   ├── Dockerfile  
 │   ├── nginx.conf  
-│   └── pom.xml       
+│   └── pom.xml  
+│ 
+├── screenshots/   
 ├── .env   
 ├── docker-compose.yml
 ├── mvnw
 ├── mvnw.cmd
-├── README.md
-└── settings.xml
+├── pom.xml
+└── README.md
 
 ```
+---
+## 📸 Screenshots
 
+Login screen:
+![Login](./screenshots/Screen1.png)
+
+Dashboard:
+![Dashboard](./screenshots/Screen2.png)
 ---
 
 ## 🧑‍💻 Maintainer
