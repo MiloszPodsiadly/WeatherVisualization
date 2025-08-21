@@ -36,4 +36,7 @@ export class LoginComponent implements OnInit {
   loginGithub() {
     this.auth.loginGithub('/welcome');
   }
+  logout() {
+    this.auth.logout().subscribe();
+  }
 }

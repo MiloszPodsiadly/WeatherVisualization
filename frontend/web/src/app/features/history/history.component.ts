@@ -10,7 +10,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
 import { FormsModule } from '@angular/forms';
 import { NgChartsModule } from 'ng2-charts';
-import { ChartConfiguration, ScatterDataPoint } from 'chart.js';
+import { ChartConfiguration, ChartData, ChartDataset, ScatterDataPoint } from 'chart.js';
+
+type MixedType = 'line';
+type Point = number | ScatterDataPoint | null;
 
 @Component({
   standalone: true,
@@ -32,20 +35,54 @@ export class HistoryComponent implements OnInit {
   to: Date = new Date();
   interval = '1h';
 
-  data: ChartConfiguration<'line', (number | ScatterDataPoint | null)[]>['data'] = { datasets: [] };
-  options: ChartConfiguration<'line'>['options'] = {
+  data: ChartData<MixedType, Point[], unknown> = { datasets: [] };
+
+  options: ChartConfiguration<MixedType>['options'] = {
     responsive: true,
+    maintainAspectRatio: false,
     parsing: false,
+    interaction: { mode: 'nearest', intersect: false },
     scales: {
       x: { type: 'time' },
-      y: { position: 'left' },
-      y1: { position: 'right', grid: { drawOnChartArea: false } }
-    }
+      y: { position: 'left', ticks: { callback: v => `${v}°C` as any } },
+      y1: {
+        position: 'right',
+        grid: { drawOnChartArea: false },
+        min: 0, max: 100,
+        ticks: { callback: v => `${v}%` as any }
+      }
+    },
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: { usePointStyle: true }
+      },
+      tooltip: {
+        callbacks: {
+          label: (ctx: import('chart.js').TooltipItem<MixedType>) => {
+            const ds = ctx.chart.data.datasets?.[ctx.datasetIndex] as ChartDataset<MixedType, Point[]> | undefined;
+            const raw = ds?.label;
+            const seriesLabel = Array.isArray(raw) ? raw.join(', ') : (raw ?? '');
+            const v = ctx.parsed.y as number;
+
+            if (seriesLabel.includes('Temp'))         return `${seriesLabel}: ${v} °C`;
+            if (seriesLabel.includes('Humidity'))   return `${seriesLabel}: ${v} %`;
+            if (seriesLabel.includes('Cloudy')) return `${seriesLabel}: ${v} %`;
+            return `${seriesLabel}: ${v}`;
+          }
+        }
+      }
+    },
+    layout: { padding: { top: 0, right: 8, bottom: 0, left: 0 } }
   };
 
   ngOnInit(): void {
-    this.locationId = this.route.snapshot.paramMap.get('id')!;
-    this.load();
+    this.route.paramMap.subscribe(pm => {
+      const id = pm.get('id');
+      if (!id) return;
+      this.locationId = id;
+      this.load();
+    });
   }
 
   private toPointOrNull(xIso: string, yVal: number | null | undefined): ScatterDataPoint | null {
@@ -54,19 +91,20 @@ export class HistoryComponent implements OnInit {
   }
 
   load() {
+    if (!this.locationId) return;
     this.api.history(this.locationId, this.from.toISOString(), this.to.toISOString(), this.interval)
       .subscribe(res => {
-        const temp = res.points.map(p => this.toPointOrNull(p.recordedAt, p.temperature));
-        const hum  = res.points.map(p => this.toPointOrNull(p.recordedAt, p.humidity));
-        const rain = res.points.map(p => this.toPointOrNull(p.recordedAt, p.precipitation));
+        const temp  = res.points.map(p => this.toPointOrNull(p.recordedAt, p.temperature));
+        const hum   = res.points.map(p => this.toPointOrNull(p.recordedAt, p.humidity));
+        const cloud = res.points.map(p => this.toPointOrNull(p.recordedAt, p.cloudCover));
 
-        this.data = {
-          datasets: [
-            { label: 'Temp (°C)',        data: temp, pointRadius: 0, tension: 0.2 },
-            { label: 'Wilgotność (%)',   data: hum,  pointRadius: 0, tension: 0.2, yAxisID: 'y1' },
-            { label: 'Opad (mm)',        data: rain, pointRadius: 0, tension: 0.2 }
-          ]
-        };
+        const datasets: ChartDataset<MixedType, Point[]>[] = [
+          { label: 'Temperature (°C)',        data: temp,  pointRadius: 0, tension: 0.2, yAxisID: 'y',  type: 'line' },
+          { label: 'Humidity (%)',   data: hum,   pointRadius: 0, tension: 0.2, yAxisID: 'y1', type: 'line' },
+          { label: 'Cloudy (%)', data: cloud, pointRadius: 0, tension: 0.2, yAxisID: 'y1', type: 'line' }
+        ];
+
+        this.data = { datasets };
       });
   }
 }

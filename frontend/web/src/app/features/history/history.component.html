@@ -1,36 +1,47 @@
-<mat-card class="mb">
-  <mat-card-title>Filtry</mat-card-title>
-  <mat-card-content class="filters">
-    <mat-form-field appearance="outline">
-      <mat-label>Od</mat-label>
-      <input matInput [matDatepicker]="dp1" [(ngModel)]="from">
-      <mat-datepicker-toggle matSuffix [for]="dp1"></mat-datepicker-toggle>
-      <mat-datepicker #dp1></mat-datepicker>
-    </mat-form-field>
+<div class="history-page">
+  <mat-card class="filters-card mb">
+    <mat-card-title>Filters</mat-card-title>
+    <mat-card-content class="filters">
+      <mat-form-field appearance="outline" floatLabel="always">
+        <mat-label>From</mat-label>
+        <input matInput [matDatepicker]="dp1" [(ngModel)]="from" (dateChange)="load()">
+        <mat-datepicker-toggle matSuffix [for]="dp1"></mat-datepicker-toggle>
+        <mat-datepicker #dp1 [touchUi]="true" [panelClass]="'centered-datepicker'"></mat-datepicker>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Do</mat-label>
-      <input matInput [matDatepicker]="dp2" [(ngModel)]="to">
-      <mat-datepicker-toggle matSuffix [for]="dp2"></mat-datepicker-toggle>
-      <mat-datepicker #dp2></mat-datepicker>
-    </mat-form-field>
+      <mat-form-field appearance="outline" floatLabel="always">
+        <mat-label>To</mat-label>
+        <input matInput [matDatepicker]="dp2" [(ngModel)]="to" (dateChange)="load()">
+        <mat-datepicker-toggle matSuffix [for]="dp2"></mat-datepicker-toggle>
+        <mat-datepicker #dp2 [touchUi]="true" [panelClass]="'centered-datepicker'"></mat-datepicker>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Interwał</mat-label>
-      <select matNativeControl [(ngModel)]="interval">
-        <option value="1h">1h</option>
-        <option value="3h">3h</option>
-        <option value="1d">1d</option>
-      </select>
-    </mat-form-field>
+      <mat-form-field appearance="outline" floatLabel="always">
+        <mat-label>Intervals</mat-label>
+        <select matNativeControl [(ngModel)]="interval" (ngModelChange)="load()">
+          <option value="1h">1h</option>
+          <option value="3h">3h</option>
+          <option value="6h">6h</option>
+          <option value="12h">12h</option>
+          <option value="1d">1d</option>
+        </select>
+      </mat-form-field>
 
-    <button mat-raised-button color="primary" (click)="load()">Pokaż</button>
-  </mat-card-content>
-</mat-card>
+      <button mat-raised-button color="primary" (click)="load()">Show</button>
+    </mat-card-content>
+  </mat-card>
 
-<mat-card>
-  <mat-card-title>Historia – temperatura / wilgotność / opady</mat-card-title>
-  <mat-card-content>
-    <canvas baseChart [data]="data" [options]="options" chartType="line"></canvas>
-  </mat-card-content>
-</mat-card>
+  <mat-card class="chart-card">
+    <mat-card-title>History – temperature / humidity / cloud cover</mat-card-title>
+    <mat-card-content class="chart-content">
+      <div class="chart-container">
+        <canvas
+          baseChart
+          [data]="data"
+          [options]="options"
+          [type]="'line'">
+        </canvas>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
