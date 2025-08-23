@@ -4,16 +4,31 @@
 
     <mat-card-content>
       <div class="metrics">
-        <span class="metric"><span class="i">🌡</span><b>Temp:</b> {{ c.data.temperature ?? '—' }} °C</span>
-        <span class="metric"><span class="i">💧</span><b>Humidity:</b> {{ c.data.humidity ?? '—' }} %</span>
-        <span class="metric"><span class="i">🧭</span><b>Pressure:</b> {{ c.data.pressure ?? '—' }} hPa</span>
-        <span class="metric"><span class="i">🏴</span><b>Wind:</b> {{ c.data.windSpeed ?? '—' }} m/s</span>
-        <span class="metric"><span class="i">☁️</span><b>Cloud cover:</b> {{ c.data.cloudCover ?? '—' }} %</span>
+        <span class="metric" aria-label="Temperature">
+          <span class="i">🌡</span><b>Temp:</b> {{ c.data.temperature ?? '—' }} °C
+        </span>
 
-        <span class="metric">
+        <span class="metric" aria-label="Humidity">
+          <span class="i">💧</span><b>Humidity:</b> {{ c.data.humidity ?? '—' }} %
+        </span>
+
+        <span class="metric" aria-label="Pressure">
+          <span class="i">🧭</span><b>Pressure:</b> {{ c.data.pressure ?? '—' }} hPa
+        </span>
+
+        <span class="metric" aria-label="Wind">
+          <span class="i">🏴</span><b>Wind:</b> {{ c.data.windSpeed ?? '—' }} m/s
+        </span>
+
+        <span class="metric" aria-label="Cloud cover">
+          <span class="i">☁️</span><b>Cloud cover:</b> {{ c.data.cloudCover ?? '—' }} %
+        </span>
+
+        <span class="metric" aria-label="PM 2.5">
           <span class="dot pm25"></span><b>PM2.5:</b> {{ c.data.pm2_5 ?? '—' }} µg/m³
         </span>
-        <span class="metric">
+
+        <span class="metric" aria-label="PM 10">
           <span class="dot pm10"></span><b>PM10:</b> {{ c.data.pm10 ?? '—' }} µg/m³
         </span>
       </div>
@@ -21,14 +36,39 @@
 
     <mat-card-subtitle *ngIf="averages" class="avg-row">
       <span class="label">24h averages:</span>
-      <span class="pill pill-temp">🌡 Temp: {{ averages.temp ?? '—' }} °C</span>
-      <span class="pill pill-pm25">
+
+      <span class="pill pill-temp" aria-label="Average temperature">
+        🌡 Temp: {{ averages.temp ?? '—' }} °C
+      </span>
+
+      <span class="pill pill-pm25" aria-label="Average PM2.5">
         <span class="dot pm25"></span> PM2.5: {{ averages.pm25 ?? '—' }} µg/m³
       </span>
-      <span class="pill pill-pm10">
+
+      <span class="pill pill-pm10" aria-label="Average PM10">
         <span class="dot pm10"></span> PM10: {{ averages.pm10 ?? '—' }} µg/m³
       </span>
     </mat-card-subtitle>
+
+    <div class="aqi-row" *ngIf="averages">
+      <span class="label">Air Quality:</span>
+
+      <span
+        class="aqi-pill"
+        [ngClass]="getAirQualityLabel(averages.pm25, 'pm25').css"
+        aria-label="Air quality PM2.5"
+      >
+        PM2.5 – {{ getAirQualityLabel(averages.pm25, 'pm25').text }}
+      </span>
+
+      <span
+        class="aqi-pill"
+        [ngClass]="getAirQualityLabel(averages.pm10, 'pm10').css"
+        aria-label="Air quality PM10"
+      >
+        PM10 – {{ getAirQualityLabel(averages.pm10, 'pm10').text }}
+      </span>
+    </div>
 
     <mat-card-actions>
       <a mat-button [routerLink]="['/history', c.location.id]">Full history</a>
@@ -39,6 +79,11 @@
 <mat-card *ngIf="history">
   <mat-card-title>Last 24h – Temperature & Air Pollution</mat-card-title>
   <mat-card-content>
-    <canvas baseChart [data]="lineData" [options]="lineOptions" chartType="line"></canvas>
+    <canvas
+      baseChart
+      [data]="lineData"
+      [options]="lineOptions"
+      chartType="line">
+    </canvas>
   </mat-card-content>
 </mat-card>

@@ -14,11 +14,18 @@ type LinePoint = number | ScatterDataPoint | null;
 @Component({
   standalone: true,
   selector: 'app-city',
-  imports: [CommonModule, RouterLink, MatCardModule, MatButtonModule, NgChartsModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatCardModule,
+    MatButtonModule,
+    NgChartsModule
+  ],
   templateUrl: './city.component.html',
   styleUrls: ['./city.component.scss']
 })
 export class CityComponent implements OnInit {
+
   private route = inject(ActivatedRoute);
   private api = inject(WeatherApiService);
 
@@ -41,16 +48,20 @@ export class CityComponent implements OnInit {
           label: (ctx: TooltipItem<'line'>) => {
             const v = ctx.parsed.y;
             const label = ctx.dataset.label ?? '';
+
             if (label.includes('Temperature')) return `🌡 Temp: ${v} °C`;
             if (label.includes('PM2.5'))       return `PM2.5: ${v} µg/m³`;
             if (label.includes('PM10'))        return `PM10: ${v} µg/m³`;
+
             return `${label}: ${v}`;
           },
           labelTextColor: (ctx: TooltipItem<'line'>) => {
             const label = ctx.dataset?.label ?? '';
+
             if (label.includes('Temperature')) return 'red';
             if (label.includes('PM2.5'))       return 'orange';
             if (label.includes('PM10'))        return 'blue';
+
             return '#000';
           }
         },
@@ -79,6 +90,7 @@ export class CityComponent implements OnInit {
 
   ngOnInit(): void {
     this.locationId = this.route.snapshot.paramMap.get('id')!;
+
     this.api.current(this.locationId).subscribe(res => this.current = res);
 
     const to = new Date();
@@ -91,9 +103,11 @@ export class CityComponent implements OnInit {
         const tempPoints: LinePoint[] = res.points.map(p =>
           p.temperature == null ? null : { x: new Date(p.recordedAt).getTime(), y: p.temperature }
         );
+
         const pm10Points: LinePoint[] = res.points.map(p =>
           p.pm10 == null ? null : { x: new Date(p.recordedAt).getTime(), y: p.pm10 }
         );
+
         const pm25Points: LinePoint[] = res.points.map(p =>
           p.pm2_5 == null ? null : { x: new Date(p.recordedAt).getTime(), y: p.pm2_5 }
         );
@@ -131,12 +145,35 @@ export class CityComponent implements OnInit {
         const validPm10  = res.points.map(p => p.pm10).filter((v): v is number => v != null);
         const validPm25  = res.points.map(p => p.pm2_5).filter((v): v is number => v != null);
 
-        const avg = (arr: number[]) => arr.length ? Number((arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1)) : null;
+        const avg = (arr: number[]) =>
+          arr.length ? Number((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1)) : null;
+
         this.averages = {
           temp: avg(validTemps),
           pm10: avg(validPm10),
-          pm25: avg(validPm25),
+          pm25: avg(validPm25)
         };
       });
+  }
+  getAirQualityLabel(value: number | null, type: 'pm25' | 'pm10'): { text: string, css: string } {
+    if (value == null) return { text: '—', css: 'aqi-unknown' };
+
+    if (type === 'pm25') {
+      if (value <= 12) return { text: 'Very good', css: 'aqi-verygood' };
+      if (value <= 20) return { text: 'Good', css: 'aqi-good' };
+      if (value <= 25) return { text: 'Medium', css: 'aqi-medium' };
+      if (value <= 50) return { text: 'Low', css: 'aqi-low' };
+      return { text: 'Bad', css: 'aqi-bad' };
+    }
+
+    if (type === 'pm10') {
+      if (value <= 20) return { text: 'Very good', css: 'aqi-verygood' };
+      if (value <= 50) return { text: 'Good', css: 'aqi-good' };
+      if (value <= 80) return { text: 'Medium', css: 'aqi-medium' };
+      if (value <= 110) return { text: 'Low', css: 'aqi-low' };
+      return { text: 'Bad', css: 'aqi-bad' };
+    }
+
+    return { text: '—', css: 'aqi-unknown' };
   }
 }
