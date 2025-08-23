@@ -17,7 +17,9 @@ public class WeatherMeasurementMapper {
                 m.getWindSpeed(),
                 m.getWindDirection(),
                 m.getPrecipitation(),
-                m.getCloudCover()
+                m.getCloudCover(),
+                m.getPm10(),
+                m.getPm2_5()
         );
     }
 
@@ -33,6 +35,8 @@ public class WeatherMeasurementMapper {
                 .windDirection(p.windDirection())
                 .precipitation(p.precipitation())
                 .cloudCover(p.cloudCover())
+                .pm10(p.pm10())
+                .pm2_5(p.pm2_5())
                 .source(source)
                 .build();
     }

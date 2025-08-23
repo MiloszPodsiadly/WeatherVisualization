@@ -76,7 +76,7 @@ public class WeatherService {
         );
     }
 
-    private String buildUrl(boolean archive, Location loc, LocalDate start, LocalDate end) {
+    private String buildWeatherUrl(boolean archive, Location loc, LocalDate start, LocalDate end) {
         String base = archive
                 ? "https://archive-api.open-meteo.com/v1/archive"
                 : "https://api.open-meteo.com/v1/forecast";
@@ -87,6 +87,39 @@ public class WeatherService {
                 + "&start_date=" + start
                 + "&end_date=" + end
                 + "&timezone=UTC";
+    }
+
+    private static final String AQ_FIELDS = "pm10,pm2_5";
+
+    private String buildAirUrl(Location loc, LocalDate start, LocalDate end) {
+        return "https://air-quality-api.open-meteo.com/v1/air-quality?"
+                + "latitude=" + loc.getLatitude()
+                + "&longitude=" + loc.getLongitude()
+                + "&hourly=" + AQ_FIELDS
+                + "&start_date=" + start
+                + "&end_date=" + end
+                + "&timezone=UTC";
+    }
+
+    private Map<Instant, double[]> fetchAirQuality(Location loc, LocalDate start, LocalDate end) {
+        String url = buildAirUrl(loc, start, end);
+        Map<Instant, double[]> out = new HashMap<>();
+        try {
+            String body = http.get().uri(url).retrieve().body(String.class);
+            JsonNode h = om.readTree(body).path("hourly");
+            var times = h.path("time");
+            var pm10  = h.path("pm10");
+            var pm25  = h.path("pm2_5");
+            if (!times.isArray() || !pm10.isArray() || !pm25.isArray()) return out;
+
+            for (int i = 0; i < times.size(); i++) {
+                Instant t = parseOmTime(times.get(i).asText()).truncatedTo(ChronoUnit.HOURS);
+                Double v10 = nodeD(pm10, i);
+                Double v25 = nodeD(pm25, i);
+                out.put(t, new double[] { v10 == null ? Double.NaN : v10, v25 == null ? Double.NaN : v25 });
+            }
+        } catch (Exception ignored) { }
+        return out;
     }
 
     private final RestClient http;
@@ -118,17 +151,23 @@ public class WeatherService {
         try {
             JsonNode root = om.readTree(body);
             JsonNode cur = root.path("current");
-            Instant ts = parseOmTime(cur.path("time").asText());
+            Instant ts = parseOmTime(cur.path("time").asText()).truncatedTo(ChronoUnit.HOURS);
 
             Double precipitation = nodeD(cur, "precipitation");
             Double cloudCover    = nodeD(cur, "cloud_cover");
 
             if (precipitation == null || cloudCover == null) {
                 JsonNode hourly = root.path("hourly");
-                Instant hourKey = ts.truncatedTo(ChronoUnit.HOURS);
+                Instant hourKey = ts;
                 if (precipitation == null) precipitation = valueAtHour(hourly, "precipitation", hourKey);
                 if (cloudCover == null)    cloudCover    = valueAtHour(hourly, "cloud_cover", hourKey);
             }
+
+            LocalDate day = LocalDateTime.ofInstant(ts, UTC).toLocalDate();
+            Map<Instant, double[]> aq = fetchAirQuality(loc, day, day);
+            double[] aqVals = aq.getOrDefault(ts, new double[] { Double.NaN, Double.NaN });
+            Double pm10 = Double.isNaN(aqVals[0]) ? null : aqVals[0];
+            Double pm25 = Double.isNaN(aqVals[1]) ? null : aqVals[1];
 
             var p = new WeatherPointDto(
                     ts,
@@ -138,7 +177,9 @@ public class WeatherService {
                     nodeD(cur, "wind_speed_10m"),
                     nodeD(cur, "wind_direction_10m"),
                     precipitation,
-                    cloudCover
+                    cloudCover,
+                    pm10,
+                    pm25
             );
 
             repo.save(measMapper.toDoc(p, loc.getId(), SOURCE));
@@ -151,12 +192,16 @@ public class WeatherService {
     public WeatherHistoryResponseDto history(Location loc, Instant from, Instant to, String interval) {
         var chunks = planChunks(from, to);
 
+        LocalDate start = LocalDateTime.ofInstant(from, UTC).toLocalDate();
+        LocalDate end   = LocalDateTime.ofInstant(to,   UTC).toLocalDate();
+        Map<Instant, double[]> aq = fetchAirQuality(loc, start, end);
+
         List<WeatherPointDto> apiPoints = new ArrayList<>();
         for (var ch : chunks) {
-            String url = buildUrl(ch.archive(), loc, ch.start(), ch.end());
+            String url = buildWeatherUrl(ch.archive(), loc, ch.start(), ch.end());
             try {
                 String body = http.get().uri(url).retrieve().body(String.class);
-                apiPoints.addAll(parseHourlyBlock(body, from, to));
+                apiPoints.addAll(parseHourlyBlock(body, from, to, aq));
             } catch (Exception ignored) { }
         }
 
@@ -177,7 +222,8 @@ public class WeatherService {
         return new WeatherHistoryResponseDto(locationMapper.toDto(loc), interval, aggregated, SOURCE);
     }
 
-    private List<WeatherPointDto> parseHourlyBlock(String body, Instant from, Instant to) throws Exception {
+    private List<WeatherPointDto> parseHourlyBlock(String body, Instant from, Instant to,
+                                                   Map<Instant, double[]> aq) throws Exception {
         List<WeatherPointDto> out = new ArrayList<>();
         JsonNode h  = om.readTree(body).path("hourly");
         var times = h.path("time");
@@ -194,7 +240,7 @@ public class WeatherService {
         var sh    = h.path("showers");
 
         for (int i = 0; i < times.size(); i++) {
-            Instant ts = parseOmTime(times.get(i).asText());
+            Instant ts = parseOmTime(times.get(i).asText()).truncatedTo(ChronoUnit.HOURS);
             if (ts.isBefore(from) || ts.isAfter(to)) continue;
 
             Double precip = nodeD(pr, i);
@@ -204,6 +250,10 @@ public class WeatherService {
                 precip = (rv == null ? 0 : rv) + (sv == null ? 0 : sv);
             }
 
+            double[] pm = aq.getOrDefault(ts, new double[]{Double.NaN, Double.NaN});
+            Double pm10 = Double.isNaN(pm[0]) ? null : pm[0];
+            Double pm25 = Double.isNaN(pm[1]) ? null : pm[1];
+
             out.add(new WeatherPointDto(
                     ts,
                     nodeD(t2m, i),
@@ -212,7 +262,9 @@ public class WeatherService {
                     nodeD(ws, i),
                     nodeD(wd, i),
                     precip,
-                    nodeD(cc, i)
+                    nodeD(cc, i),
+                    pm10,
+                    pm25
             ));
         }
         return out;
@@ -233,22 +285,24 @@ public class WeatherService {
 
     private static List<WeatherPointDto> aggregateToInterval(List<WeatherPointDto> points, Duration step) {
         long stepSec = step.getSeconds();
-        record Acc(double t,double h,double p,double ws,double wd,double pr,double cc,int n){}
+        record Acc(double t,double h,double p,double ws,double wd,double pr,double cc,double pm10,double pm25,int n){}
         var map = new TreeMap<Instant, Acc>();
 
         for (var p : points) {
             long bucket = Math.floorDiv(p.recordedAt().getEpochSecond(), stepSec) * stepSec;
             Instant key = Instant.ofEpochSecond(bucket);
-            var a = map.getOrDefault(key, new Acc(0,0,0,0,0,0,0,0));
+            var a = map.getOrDefault(key, new Acc(0,0,0,0,0,0,0,0,0,0));
             a = new Acc(
-                    a.t  + nz(p.temperature()),
-                    a.h  + nz(p.humidity()),
-                    a.p  + nz(p.pressure()),
-                    a.ws + nz(p.windSpeed()),
-                    a.wd + nz(p.windDirection()),
-                    a.pr + nz(p.precipitation()),
-                    a.cc + nz(p.cloudCover()),
-                    a.n  + 1
+                    a.t   + nz(p.temperature()),
+                    a.h   + nz(p.humidity()),
+                    a.p   + nz(p.pressure()),
+                    a.ws  + nz(p.windSpeed()),
+                    a.wd  + nz(p.windDirection()),
+                    a.pr  + nz(p.precipitation()),
+                    a.cc  + nz(p.cloudCover()),
+                    a.pm10+ nz(p.pm10()),
+                    a.pm25+ nz(p.pm2_5()),
+                    a.n   + 1
             );
             map.put(key, a);
         }
@@ -264,7 +318,9 @@ public class WeatherService {
                     a.ws()/n,
                     a.wd()/n,
                     a.pr(),
-                    a.cc()/n
+                    a.cc()/n,
+                    a.pm10()/n,
+                    a.pm25()/n
             ));
         }
         return out;
