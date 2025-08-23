@@ -4,7 +4,6 @@
   min-height: 100vh;
 }
 
-/* Topbar */
 .topbar {
   position: sticky;
   top: 0;
@@ -62,14 +61,12 @@
   }
 }
 
-/* Main content area */
 .content {
   flex: 1;
   padding: 20px;
   background: #f5f6fa;
 }
 
-/* Footer */
 .footer {
   background: #1a237e;
   color: #ccc;

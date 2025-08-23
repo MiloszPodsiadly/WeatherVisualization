@@ -1,0 +1,19 @@
+<div class="wrap">
+  <h1>Poland forecast</h1>
+
+  <div class="toolbar">
+    <button *ngFor="let r of ranges"
+            class="chip"
+            [class.active]="active===r.key"
+            (click)="setRange(r.key)">
+      {{ r.label }}
+    </button>
+  </div>
+
+  <div class="map-card" #cardEl>
+    <img #imgEl class="map" src="assets/pl-map-plain.jpg" alt="Poland map">
+    <canvas #canvasEl class="overlay" aria-label="Cities overlay"></canvas>
+  </div>
+
+  <div class="legend">Temp (°C) • Rain probability (%)</div>
+</div>

@@ -10,7 +10,7 @@ It integrates **location search, historical and real-time weather data, and OAut
 
 The platform emphasizes:  
 - **Scalability** – Cloud deployment-ready with modular architecture.  
-- **Security** – OAuth2 (Google & GitHub) with session-based authentication (no JWT).  
+- **Security** – OAuth2 (Google & GitHub) with session-based authentication.  
 - **Data-driven insights** – Weather data sourced via external APIs and cached in MongoDB.  
 - **Great UX** – Angular frontend for responsive, reactive data visualization.  
 
@@ -19,9 +19,8 @@ The platform emphasizes:
 ## 🌐 Architectural Principles
 - **Separation of Concerns** – clean split between frontend, backend, and persistence.  
 - **External API Integration** – geocoding & weather APIs (Open-Meteo).  
-- **Spring Security with OAuth2 login** – sessions managed by Spring Security (no JWT).  
-- **Resiliency** – error handling & caching to ensure consistent UX.  
-- **Cloud-Ready** – Dockerizable, easily deployable to Kubernetes or container services.  
+- **Spring Security with OAuth2 login** – sessions managed by Spring Security.  
+- **Resiliency** – error handling & caching to ensure consistent UX.
 
 ---
 
@@ -72,7 +71,6 @@ The platform emphasizes:
 ## 🚀 Local Development Workflow
 ### Start App
 ```bash
-mvn clean install
 docker-compose up --build
 ```
 Runs on: `http://localhost:80`
@@ -81,7 +79,8 @@ Runs on: `http://localhost:80`
 
 ## 🖼️ Frontend Features
 - Reactive Angular UI.  
-- Interactive weather charts (temperature, humidity, precipitation).  
+- Interactive weather charts (temperature, humidity, cloudy). 
+- Forecast display o the map of Poland
 - Location-based weather search.  
 - Responsive design for mobile & desktop.  
 - Secure login flow.  
@@ -91,6 +90,8 @@ Runs on: `http://localhost:80`
 ## 📂 Repository Layout
 ```
 WeatherVisualization/
+├──.circleci/
+├──.mvn
 ├── backend/
 │   ├── src/
 │   │   ├── main/java/com/milosz/podsiadly/backend/
