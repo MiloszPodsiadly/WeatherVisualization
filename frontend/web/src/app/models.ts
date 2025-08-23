@@ -9,13 +9,16 @@ export interface LocationDto {
 
 export interface WeatherPointDto {
   recordedAt: string;
-  temperature?: number;
-  humidity?: number;
-  pressure?: number;
-  windSpeed?: number;
-  windDirection?: number;
-  precipitation?: number;
-  cloudCover?: number;
+
+  temperature?: number | null;
+  humidity?: number | null;
+  pressure?: number | null;
+  windSpeed?: number | null;
+  windDirection?: number | null;
+  precipitation?: number | null;
+  cloudCover?: number | null;
+  pm10?: number | null;
+  pm2_5?: number | null;
 }
 
 export interface WeatherCurrentDto {
@@ -30,4 +33,3 @@ export interface WeatherHistoryResponseDto {
   points: WeatherPointDto[];
   source: string;
 }
-

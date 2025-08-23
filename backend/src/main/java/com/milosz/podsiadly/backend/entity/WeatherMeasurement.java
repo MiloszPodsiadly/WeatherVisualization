@@ -2,8 +2,8 @@ package com.milosz.podsiadly.backend.entity;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
@@ -28,6 +28,7 @@ public class WeatherMeasurement {
     private Double windDirection;
     private Double precipitation;
     private Double cloudCover;
-
-    private String source;          // np. "OPEN_METEO"
+    private Double pm10;
+    private Double pm2_5;
+    private String source;
 }

@@ -10,7 +10,7 @@ import java.time.Instant;
 
 @RestController
 @RequestMapping("/api/weather")
-public class    WeatherController {
+public class WeatherController {
 
     private final WeatherService weatherService;
     private final LocationService locationService;

@@ -6,7 +6,10 @@ import { WeatherCurrentDto, WeatherHistoryResponseDto } from '../../models';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { NgChartsModule } from 'ng2-charts';
-import { ChartConfiguration, ScatterDataPoint } from 'chart.js';
+import { ChartConfiguration, ScatterDataPoint, ChartDataset, TooltipItem } from 'chart.js';
+import 'chartjs-adapter-date-fns';
+
+type LinePoint = number | ScatterDataPoint | null;
 
 @Component({
   standalone: true,
@@ -23,15 +26,56 @@ export class CityComponent implements OnInit {
   current?: WeatherCurrentDto;
   history?: WeatherHistoryResponseDto;
 
-  lineData: ChartConfiguration<'line', (number | ScatterDataPoint | null)[]>['data'] = { datasets: [] };
+  averages?: { temp: number | null; pm10: number | null; pm25: number | null };
+
+  lineData: ChartConfiguration<'line', LinePoint[]>['data'] = { datasets: [] };
+
   lineOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true,
     parsing: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: true },
+      tooltip: {
+        callbacks: {
+          label: (ctx: TooltipItem<'line'>) => {
+            const v = ctx.parsed.y;
+            const label = ctx.dataset.label ?? '';
+            if (label.includes('Temperature')) return `🌡 Temp: ${v} °C`;
+            if (label.includes('PM2.5'))       return `PM2.5: ${v} µg/m³`;
+            if (label.includes('PM10'))        return `PM10: ${v} µg/m³`;
+            return `${label}: ${v}`;
+          },
+          labelTextColor: (ctx: TooltipItem<'line'>) => {
+            const label = ctx.dataset?.label ?? '';
+            if (label.includes('Temperature')) return 'red';
+            if (label.includes('PM2.5'))       return 'orange';
+            if (label.includes('PM10'))        return 'blue';
+            return '#000';
+          }
+        },
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        borderColor: '#ddd',
+        borderWidth: 1,
+        titleColor: '#333'
+      }
+    },
     scales: {
       x: { type: 'time' },
-      y: { ticks: { callback: v => `${v}°C` } }
+      y: {
+        position: 'left',
+        title: { display: true, text: 'Temperature (°C)' },
+        ticks: { callback: v => `${v}°C` }
+      },
+      y2: {
+        position: 'right',
+        grid: { drawOnChartArea: false },
+        title: { display: true, text: 'Air pollution (µg/m³)' },
+        ticks: { callback: v => `${v}` }
+      }
     }
   };
+
 
   ngOnInit(): void {
     this.locationId = this.route.snapshot.paramMap.get('id')!;
@@ -44,20 +88,54 @@ export class CityComponent implements OnInit {
       .subscribe(res => {
         this.history = res;
 
-        const points: (ScatterDataPoint | null)[] = res.points.map(p => {
-          const y = p.temperature;
-          return (y == null)
-            ? null
-            : { x: new Date(p.recordedAt).getTime(), y };
-        });
+        const tempPoints: LinePoint[] = res.points.map(p =>
+          p.temperature == null ? null : { x: new Date(p.recordedAt).getTime(), y: p.temperature }
+        );
+        const pm10Points: LinePoint[] = res.points.map(p =>
+          p.pm10 == null ? null : { x: new Date(p.recordedAt).getTime(), y: p.pm10 }
+        );
+        const pm25Points: LinePoint[] = res.points.map(p =>
+          p.pm2_5 == null ? null : { x: new Date(p.recordedAt).getTime(), y: p.pm2_5 }
+        );
 
-        this.lineData = {
-          datasets: [{
-            label: 'Temperatura (°C)',
-            data: points,
+        const datasets: ChartDataset<'line', LinePoint[]>[] = [
+          {
+            label: 'Temperature (°C)',
+            data: tempPoints,
+            borderColor: 'red',
             pointRadius: 0,
-            tension: 0.2
-          }]
+            tension: 0.2,
+            yAxisID: 'y'
+          } as ChartDataset<'line', LinePoint[]>,
+          {
+            label: 'PM10 (µg/m³)',
+            data: pm10Points,
+            borderColor: 'blue',
+            pointRadius: 0,
+            tension: 0.2,
+            yAxisID: 'y2'
+          } as ChartDataset<'line', LinePoint[]>,
+          {
+            label: 'PM2.5 (µg/m³)',
+            data: pm25Points,
+            borderColor: 'orange',
+            pointRadius: 0,
+            tension: 0.2,
+            yAxisID: 'y2'
+          } as ChartDataset<'line', LinePoint[]>
+        ];
+
+        this.lineData = { datasets };
+
+        const validTemps = res.points.map(p => p.temperature).filter((v): v is number => v != null);
+        const validPm10  = res.points.map(p => p.pm10).filter((v): v is number => v != null);
+        const validPm25  = res.points.map(p => p.pm2_5).filter((v): v is number => v != null);
+
+        const avg = (arr: number[]) => arr.length ? Number((arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1)) : null;
+        this.averages = {
+          temp: avg(validTemps),
+          pm10: avg(validPm10),
+          pm25: avg(validPm25),
         };
       });
   }
