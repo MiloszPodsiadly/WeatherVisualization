@@ -1,12 +1,14 @@
-// src/app/features/forecast/forecast.component.ts
 import {
   Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, DestroyRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ForecastApiService, PlSnapshotResponse, CitySnapshot, RangeKey } from '../../services/forecast-api.service';
+import { ForecastApiService, PlSnapshotResponse, RangeKey } from '../../services/forecast-api.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-type DisplayCity = { id: string; name: string; lat: number; lon: number; tMax?: number | null; pop?: number | null };
+type DisplayCity = {
+  id: string; name: string; lat: number; lon: number;
+  tMax?: number | null; pop?: number | null;
+};
 
 @Component({
   standalone: true,
@@ -24,7 +26,6 @@ export class ForecastComponent implements AfterViewInit, OnDestroy {
   ];
   active: RangeKey = 'today';
 
-  /** Base geometry: always draw these 8 pins. */
   private readonly BASE_CITIES: DisplayCity[] = [
     { id: 'waw', name: 'Warsaw',   lat: 52.2297, lon: 21.0122 },
     { id: 'krk', name: 'Kraków',   lat: 50.0647, lon: 19.9450 },
@@ -36,7 +37,17 @@ export class ForecastComponent implements AfterViewInit, OnDestroy {
     { id: 'lub', name: 'Lublin',   lat: 51.2465, lon: 22.5684 },
   ];
 
-  /** What we actually draw. */
+  private readonly CITY_OFFSETS: Record<string, { dx: number; dy: number }> = {
+    szc: { dx: -0.035, dy: -0.020 },
+    gda: { dx: -0.004, dy: -0.034 },
+    poz: { dx:  0.014, dy: -0.012 },
+    wro: { dx: -0.010, dy: -0.012 },
+    ldz: { dx: -0.012, dy: -0.012 },
+    waw: { dx:  0.014, dy: -0.012 },
+    lub: { dx: -0.012, dy: -0.018 },
+    krk: { dx:  0.004, dy: -0.018 },
+  };
+
   private cities: DisplayCity[] = this.BASE_CITIES.map(c => ({ ...c }));
 
   private data?: PlSnapshotResponse;
@@ -50,7 +61,7 @@ export class ForecastComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private api: ForecastApiService,
-    private destroyRef: DestroyRef     // <-- for takeUntilDestroyed
+    private destroyRef: DestroyRef
   ) {}
 
   ngAfterViewInit(): void {
@@ -90,42 +101,32 @@ export class ForecastComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  /** Fetch snapshot, map payload to pins, redraw. */
   private load(r: RangeKey) {
     this.api.plSnapshot(r)
-      .pipe(takeUntilDestroyed(this.destroyRef))   // <-- pass DestroyRef to avoid NG0203
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (d) => {
-          console.log('pl-snapshot OK →', d);      // should print your JSON
-
           this.data = d;
           this.active = this.normalizeRange(d.range);
 
-          const payload = Array.isArray(d.cities) ? d.cities : [];
-
-          // Use backend’s cities directly; preserve 0 for pop
-          this.cities = payload.length
-            ? payload.map(c => ({
-              id: c.id,
-              name: c.name,
-              lat: c.lat,
-              lon: c.lon,
-              tMax: c.tMax ?? null,
-              pop:  c.pop  ?? null,
-            }))
-            : this.BASE_CITIES.map(b => ({ ...b, tMax: null, pop: null }));
+          const byId = new Map(d.cities?.map(c => [c.id, c]) ?? []);
+          this.cities = this.BASE_CITIES.map(base => {
+            const m = byId.get(base.id);
+            return m
+              ? { ...base, tMax: m.tMax ?? null, pop: m.pop ?? null }
+              : { ...base, tMax: null, pop: null };
+          });
 
           this.redraw();
         },
         error: (err) => {
-          console.error('plSnapshot FAILED →', err);
+          console.error('plSnapshot failed', err);
           this.cities = this.BASE_CITIES.map(b => ({ ...b, tMax: null, pop: null }));
           this.redraw();
         }
       });
   }
 
-  /** ---------------- Drawing ---------------- */
   private redraw() {
     const img = this.imgEl.nativeElement;
     const cvs = this.canvasEl.nativeElement;
@@ -145,28 +146,18 @@ export class ForecastComponent implements AfterViewInit, OnDestroy {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, rect.width, rect.height);
 
-    // Map content box (trim the image’s white margins)
     const PAD = { l: 0.07, r: 0.06, t: 0.06, b: 0.05 };
     const boxX = rect.width  * PAD.l;
     const boxY = rect.height * PAD.t;
     const boxW = rect.width  * (1 - PAD.l - PAD.r);
     const boxH = rect.height * (1 - PAD.t - PAD.b);
 
-    // thin frame showing the plotting area
-    ctx.save();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = 'rgba(0,0,0,.15)';
-    ctx.strokeRect(Math.round(boxX)+0.5, Math.round(boxY)+0.5, Math.round(boxW), Math.round(boxH));
-    ctx.restore();
-
-    // Title inside the map
     ctx.save();
     ctx.fillStyle = '#0d1b4d';
     ctx.font = '700 22px Inter, Roboto, Arial, sans-serif';
     ctx.fillText('Poland forecast', boxX + 12, boxY + 26);
     ctx.restore();
 
-    // Projection
     const minLat = 49.0, maxLat = 55.2;
     const minLon = 14.0, maxLon = 24.5;
 
@@ -176,9 +167,11 @@ export class ForecastComponent implements AfterViewInit, OnDestroy {
 
     const drawPin = (c: DisplayCity) => {
       const x01 = (c.lon - minLon) / (maxLon - minLon);
-      const y01 = 1 - (this.mercY(c.lat) - this.mercY(minLat)) / (this.mercY(maxLat) - this.mercY(minLat));
-      const x = boxX + x01 * boxW;
-      const y = boxY + y01 * boxH;
+      const y01 = (maxLat - c.lat) / (maxLat - minLat);
+
+      const off = this.CITY_OFFSETS[c.id] ?? { dx: 0, dy: 0 };
+      const x = boxX + (x01 + off.dx) * boxW;
+      const y = boxY + (y01 + off.dy) * boxH;
 
       const temp = c.tMax != null ? `${Math.round(c.tMax)}°` : '–';
       const pop  = c.pop  != null ? `${c.pop}%` : '–';
@@ -206,13 +199,6 @@ export class ForecastComponent implements AfterViewInit, OnDestroy {
     for (const c of this.cities) drawPin(c);
 
     ctx.restore();
-
-    ctx.fillStyle = '#64748b';
-    ctx.fillText('Temp (°C)  •  Rain probability (%)', boxX + 8 * k, boxY + boxH - 10 * k);
-  }
-
-  private mercY(lat: number) {
-    return Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI / 180) / 2));
   }
 
   private roundRect(
