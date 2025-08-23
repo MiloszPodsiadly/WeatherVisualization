@@ -1,0 +1,41 @@
+/* src/app/features/forecast/forecast.component.scss */
+.wrap { max-width:1100px; margin:24px auto; padding:0 16px; }
+h1 { margin:6px 0 14px; font-weight:800; }
+
+.toolbar {
+  display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;
+  .chip { padding:6px 10px; border-radius:8px; border:1px solid #d4d7e2; background:#fff; cursor:pointer; font-weight:600;
+    &.active { background:#1e3a8a; color:#fff; border-color:#1e3a8a; }
+  }
+}
+
+.map-card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 6px 22px rgba(0,0,0,.06);
+}
+
+.map {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+  position: relative;
+  z-index: 1;              /* explicitly beneath the canvas */
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: block;          /* ensure it participates in layout */
+  width: 100%;
+  height: 100%;
+  z-index: 10;             /* explicitly above the image */
+  pointer-events: none;
+  background: transparent; /* keep clear, but visible if we fill */
+}
+
+.legend { color:#64748b; margin-top:8px; font-size:.95rem; }
