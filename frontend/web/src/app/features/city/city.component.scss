@@ -1,2 +1,44 @@
 .mb { margin-bottom: 16px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 8px; }
+
+.metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  align-items: center;
+  font-size: 14px;
+
+  .metric { display: inline-flex; align-items: center; gap: 6px; }
+  .i { opacity: .9; }
+  b { font-weight: 600; }
+}
+
+.dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  display: inline-block;
+  &.pm25 { background: #f39c12; }
+  &.pm10 { background: #3498db; }
+}
+
+.avg-row {
+  margin: 6px 16px 2px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .label { font-weight: 700; margin-right: 6px; color: black; }
+}
+
+.pill {
+  display: inline-flex; align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 12.5px;
+  border: 1px solid transparent;
+
+  &.pill-temp { background: #ffe4e6; color:#b91c1c; border-color:#fecaca; }
+  &.pill-pm25 { background: #fff3e0; color:#e65100; border-color:#ffe0b2; }
+  &.pill-pm10 { background: #e3f2fd; color:#1565c0; border-color:#bbdefb; }
+}
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; }

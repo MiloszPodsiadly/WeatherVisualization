@@ -1,22 +1,43 @@
 <ng-container *ngIf="current as c">
   <mat-card class="mb">
-    <mat-card-title>{{ c.location.name }} – teraz</mat-card-title>
-    <mat-card-content class="grid">
-      <div><strong>Temp:</strong> {{ c.data.temperature ?? '—' }} °C</div>
-      <div><strong>Wilgotność:</strong> {{ c.data.humidity ?? '—' }} %</div>
-      <div><strong>Ciśnienie:</strong> {{ c.data.pressure ?? '—' }} hPa</div>
-      <div><strong>Wiatr:</strong> {{ c.data.windSpeed ?? '—' }} m/s</div>
-      <div><strong>Opad:</strong> {{ c.data.precipitation ?? '—' }} mm</div>
-      <div><strong>Zachmurzenie:</strong> {{ c.data.cloudCover ?? '—' }} %</div>
+    <mat-card-title>{{ c.location.name }} – now</mat-card-title>
+
+    <mat-card-content>
+      <div class="metrics">
+        <span class="metric"><span class="i">🌡</span><b>Temp:</b> {{ c.data.temperature ?? '—' }} °C</span>
+        <span class="metric"><span class="i">💧</span><b>Humidity:</b> {{ c.data.humidity ?? '—' }} %</span>
+        <span class="metric"><span class="i">🧭</span><b>Pressure:</b> {{ c.data.pressure ?? '—' }} hPa</span>
+        <span class="metric"><span class="i">🏴</span><b>Wind:</b> {{ c.data.windSpeed ?? '—' }} m/s</span>
+        <span class="metric"><span class="i">☁️</span><b>Cloud cover:</b> {{ c.data.cloudCover ?? '—' }} %</span>
+
+        <span class="metric">
+          <span class="dot pm25"></span><b>PM2.5:</b> {{ c.data.pm2_5 ?? '—' }} µg/m³
+        </span>
+        <span class="metric">
+          <span class="dot pm10"></span><b>PM10:</b> {{ c.data.pm10 ?? '—' }} µg/m³
+        </span>
+      </div>
     </mat-card-content>
+
+    <mat-card-subtitle *ngIf="averages" class="avg-row">
+      <span class="label">24h averages:</span>
+      <span class="pill pill-temp">🌡 Temp: {{ averages.temp ?? '—' }} °C</span>
+      <span class="pill pill-pm25">
+        <span class="dot pm25"></span> PM2.5: {{ averages.pm25 ?? '—' }} µg/m³
+      </span>
+      <span class="pill pill-pm10">
+        <span class="dot pm10"></span> PM10: {{ averages.pm10 ?? '—' }} µg/m³
+      </span>
+    </mat-card-subtitle>
+
     <mat-card-actions>
-      <a mat-button [routerLink]="['/history', c.location.id]">Pełna historia</a>
+      <a mat-button [routerLink]="['/history', c.location.id]">Full history</a>
     </mat-card-actions>
   </mat-card>
 </ng-container>
 
 <mat-card *ngIf="history">
-  <mat-card-title>Ostatnie 24h – temperatura</mat-card-title>
+  <mat-card-title>Last 24h – Temperature & Air Pollution</mat-card-title>
   <mat-card-content>
     <canvas baseChart [data]="lineData" [options]="lineOptions" chartType="line"></canvas>
   </mat-card-content>
