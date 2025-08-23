@@ -12,6 +12,8 @@ export const routes: Routes = [
   { path: 'city/:id', canActivate: [authGuard], loadComponent: () => import('./features/city/city.component').then(m => m.CityComponent) },
   { path: 'history/:id', canActivate: [authGuard], loadComponent: () => import('./features/history/history.component').then(m => m.HistoryComponent) },
 
+  // 🆕 Forecast TV-style mapa
+  { path: 'forecast', canActivate: [authGuard], loadComponent: () => import('./features/forecast/forecast.component').then(m => m.ForecastComponent) },
 
   { path: '**', redirectTo: 'login' }
 ];
