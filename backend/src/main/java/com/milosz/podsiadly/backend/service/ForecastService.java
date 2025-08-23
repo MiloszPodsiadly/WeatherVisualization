@@ -21,8 +21,6 @@ public class ForecastService {
         this.http = http;
     }
 
-    /** ---- PUBLIC API ---- */
-
     public DailySeriesDto daily(double lat, double lon, int days) {
         int d = Math.max(1, Math.min(days, 16));
         String url = "https://api.open-meteo.com/v1/forecast"
@@ -44,7 +42,6 @@ public class ForecastService {
         }
     }
 
-    /** Snapshot dla 8 miast PL, jak w TV. */
     public PlSnapshotResponseDto polandSnapshot(String range) {
         Range r = Range.from(range);
 
@@ -73,8 +70,6 @@ public class ForecastService {
         }
         return new PlSnapshotResponseDto(r.key, Instant.now(), out);
     }
-
-    /** ---- helpers ---- */
 
     private static Double pickDouble(List<Double> list, int i) {
         if (list == null || list.isEmpty()) return null;
@@ -137,7 +132,6 @@ public class ForecastService {
         }
     }
 
-    /** 8 głównych miast PL */
     private record City(String id, String name, double lat, double lon) {
         static final List<City> EIGHT = List.of(
                 new City("waw","Warsaw",   52.2297, 21.0122),

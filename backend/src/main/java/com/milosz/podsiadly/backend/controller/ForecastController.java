@@ -1,4 +1,3 @@
-// src/main/java/com/milosz/podsiadly/backend/controller/ForecastController.java
 package com.milosz.podsiadly.backend.controller;
 
 import com.milosz.podsiadly.backend.dto.DailySeriesDto;
@@ -16,13 +15,11 @@ public class ForecastController {
         this.service = service;
     }
 
-    /** 8 main Polish cities snapshot: range = today | tomorrow | +2 | week */
     @GetMapping("/pl-snapshot")
     public PlSnapshotResponseDto polandSnapshot(@RequestParam(defaultValue = "today") String range) {
         return service.polandSnapshot(range);
     }
 
-    /** Daily series for any lat/lon (max 16 days). */
     @GetMapping("/daily")
     public DailySeriesDto daily(
             @RequestParam double lat,
