@@ -32,10 +32,10 @@ public class ForecastService {
 
         String body = http.get().uri(url).retrieve().body(String.class);
         try {
-            JsonNode root  = om.readTree(body).path("daily");
+            JsonNode root = om.readTree(body).path("daily");
             List<String> dates = toStrList(root.path("time"));
-            List<Double> tmax  = toDblList(root.path("temperature_2m_max"));
-            List<Integer> pop  = toIntList(root.path("precipitation_probability_max"));
+            List<Double> tmax = toDblList(root.path("temperature_2m_max"));
+            List<Integer> pop = toIntList(root.path("precipitation_probability_max"));
             return new DailySeriesDto(dates, tmax, pop);
         } catch (Exception e) {
             throw new RuntimeException("Cannot parse Open-Meteo daily", e);
@@ -45,7 +45,7 @@ public class ForecastService {
     public PlSnapshotResponseDto polandSnapshot(String range) {
         Range r = Range.from(range);
 
-        List<City> cities = City.EIGHT;
+        List<City> cities = City.ALL;
         List<CitySnapshotDto> out = new ArrayList<>(cities.size());
 
         for (City c : cities) {
@@ -86,8 +86,13 @@ public class ForecastService {
 
     private static Double avg(List<Double> list) {
         if (list == null || list.isEmpty()) return null;
-        double sum = 0; int n = 0;
-        for (Double v : list) if (v != null && !v.isNaN() && !v.isInfinite()) { sum += v; n++; }
+        double sum = 0;
+        int n = 0;
+        for (Double v : list)
+            if (v != null && !v.isNaN() && !v.isInfinite()) {
+                sum += v;
+                n++;
+            }
         return n == 0 ? null : sum / n;
     }
 
@@ -104,12 +109,14 @@ public class ForecastService {
         arr.forEach(n -> out.add(n.asText()));
         return out;
     }
+
     private static List<Double> toDblList(JsonNode arr) {
         if (arr == null || !arr.isArray()) return List.of();
         List<Double> out = new ArrayList<>(arr.size());
         arr.forEach(n -> out.add(n.isNull() ? null : n.asDouble()));
         return out;
     }
+
     private static List<Integer> toIntList(JsonNode arr) {
         if (arr == null || !arr.isArray()) return List.of();
         List<Integer> out = new ArrayList<>(arr.size());
@@ -119,8 +126,14 @@ public class ForecastService {
 
     private enum Range {
         TODAY("today", 0), TOMORROW("tomorrow", 1), PLUS2("+2", 2), WEEK("week", -1);
-        final String key; final int offset;
-        Range(String key, int offset) { this.key = key; this.offset = offset; }
+        final String key;
+        final int offset;
+
+        Range(String key, int offset) {
+            this.key = key;
+            this.offset = offset;
+        }
+
         static Range from(String s) {
             if (s == null) return TODAY;
             return switch (s.toLowerCase()) {
@@ -133,15 +146,23 @@ public class ForecastService {
     }
 
     private record City(String id, String name, double lat, double lon) {
-        static final List<City> EIGHT = List.of(
-                new City("waw","Warsaw",   52.2297, 21.0122),
-                new City("krk","Kraków",   50.0647, 19.9450),
-                new City("ldz","Łódź",     51.7592, 19.4550),
-                new City("wro","Wrocław",  51.1079, 17.0385),
-                new City("poz","Poznań",   52.4064, 16.9252),
-                new City("gda","Gdańsk",   54.3520, 18.6466),
-                new City("szc","Szczecin", 53.4285, 14.5528),
-                new City("lub","Lublin",   51.2465, 22.5684)
+        static final List<City> ALL = List.of(
+                new City("waw", "Warsaw", 52.2297, 21.0122),
+                new City("krk", "Kraków", 50.0647, 19.9450),
+                new City("ldz", "Łódź", 51.7592, 19.4550),
+                new City("wro", "Wrocław", 51.1079, 17.0385),
+                new City("poz", "Poznań", 52.4064, 16.9252),
+                new City("gda", "Gdańsk", 54.3520, 18.6466),
+                new City("szc", "Szczecin", 53.4285, 14.5528),
+                new City("lub", "Lublin", 51.2465, 22.5684),
+                new City("bia", "Białystok", 53.1325, 23.1688),
+                new City("rze", "Rzeszów", 50.0412, 21.9991),
+                new City("opl", "Opole", 50.6751, 17.9213),
+                new City("ols", "Olsztyn", 53.7784, 20.4801),
+                new City("tor", "Toruń", 53.0138, 18.5984),
+                new City("zgo", "Zielona Góra", 51.9356, 15.5062),
+                new City("kos", "Koszalin",     54.1940, 16.1720),
+                new City("kie", "Kielce",       50.8661, 20.6286)
         );
     }
 }

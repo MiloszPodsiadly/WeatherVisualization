@@ -27,25 +27,42 @@ export class ForecastComponent implements AfterViewInit, OnDestroy {
   active: RangeKey = 'today';
 
   private readonly BASE_CITIES: DisplayCity[] = [
-    { id: 'waw', name: 'Warsaw',   lat: 52.2297, lon: 21.0122 },
-    { id: 'krk', name: 'Kraków',   lat: 50.0647, lon: 19.9450 },
-    { id: 'ldz', name: 'Łódź',     lat: 51.7592, lon: 19.4550 },
-    { id: 'wro', name: 'Wrocław',  lat: 51.1079, lon: 17.0385 },
-    { id: 'poz', name: 'Poznań',   lat: 52.4064, lon: 16.9252 },
-    { id: 'gda', name: 'Gdańsk',   lat: 54.3520, lon: 18.6466 },
-    { id: 'szc', name: 'Szczecin', lat: 53.4285, lon: 14.5528 },
-    { id: 'lub', name: 'Lublin',   lat: 51.2465, lon: 22.5684 },
+    { id: 'waw', name: 'Warsaw',       lat: 52.2297, lon: 21.0122 },
+    { id: 'krk', name: 'Kraków',       lat: 50.0647, lon: 19.9450 },
+    { id: 'ldz', name: 'Łódź',         lat: 51.7592, lon: 19.4550 },
+    { id: 'wro', name: 'Wrocław',      lat: 51.1079, lon: 17.0385 },
+    { id: 'poz', name: 'Poznań',       lat: 52.4064, lon: 16.9252 },
+    { id: 'gda', name: 'Gdańsk',       lat: 54.3520, lon: 18.6466 },
+    { id: 'szc', name: 'Szczecin',     lat: 53.4285, lon: 14.5528 },
+    { id: 'lub', name: 'Lublin',       lat: 51.2465, lon: 22.5684 },
+    { id: 'bia', name: 'Białystok',    lat: 53.1325, lon: 23.1688 },
+    { id: 'rze', name: 'Rzeszów',      lat: 50.0412, lon: 21.9991 },
+    { id: 'opl', name: 'Opole',        lat: 50.6751, lon: 17.9213 },
+    { id: 'ols', name: 'Olsztyn',      lat: 53.7784, lon: 20.4801 },
+    { id: 'tor', name: 'Toruń',        lat: 53.0138, lon: 18.5984 },
+    { id: 'zgo', name: 'Zielona Góra', lat: 51.9356, lon: 15.5062 },
+    { id: 'kos', name: 'Koszalin',     lat: 54.1940, lon: 16.1720 },
+    { id: 'kie', name: 'Kielce',       lat: 50.8661, lon: 20.6286 },
   ];
 
+
   private readonly CITY_OFFSETS: Record<string, { dx: number; dy: number }> = {
-    szc: { dx: -0.035, dy: -0.020 },
-    gda: { dx: -0.004, dy: -0.034 },
-    poz: { dx:  0.014, dy: -0.012 },
-    wro: { dx: -0.010, dy: -0.012 },
-    ldz: { dx: -0.012, dy: -0.012 },
-    waw: { dx:  0.014, dy: -0.012 },
+    szc: { dx: -0.035, dy: -0.070 },
+    gda: { dx: -0.024, dy: -0.044 },
+    poz: { dx:  0.014, dy: -0.042 },
+    wro: { dx: -0.050, dy: -0.032 },
+    ldz: { dx: -0.032, dy: -0.032 },
+    waw: { dx:  0.014, dy: -0.032 },
     lub: { dx: -0.012, dy: -0.018 },
-    krk: { dx:  0.004, dy: -0.018 },
+    krk: { dx: -0.014, dy: -0.018 },
+    bia: { dx:  0.010, dy: -0.016 },
+    rze: { dx:  0.006, dy: -0.010 },
+    opl: { dx: -0.026, dy: -0.030 },
+    ols: { dx:  0.012, dy: -0.020 },
+    tor: { dx:  0.028, dy: -0.002 },
+    zgo: { dx: -0.010, dy: -0.012 },
+    kos: { dx: -0.028, dy: -0.048 },
+    kie: { dx:  0.006, dy: -0.028 },
   };
 
   private cities: DisplayCity[] = this.BASE_CITIES.map(c => ({ ...c }));
