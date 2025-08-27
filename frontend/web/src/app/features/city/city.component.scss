@@ -60,7 +60,7 @@
   .label {
     font-weight: 700;
     margin-right: 6px;
-    color: #000; /* czarny napis */
+    color: #000;
   }
 }
 
@@ -85,7 +85,6 @@
   gap: 8px;
 }
 
-/* sr-only helper */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -98,7 +97,6 @@
   border: 0;
 }
 
-/* keep action buttons side-by-side */
 mat-card-actions.actions {
   display: flex;
   gap: 8px;
