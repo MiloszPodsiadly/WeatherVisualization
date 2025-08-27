@@ -1,0 +1,70 @@
+/* Kolory serii — czytane w TS przez getComputedStyle */
+:root {
+  --aq-color-pm10: #3b82f6;  /* niebieski */
+  --aq-color-pm25: #f59e0b;  /* pomarańcz */
+  --aq-color-uv:   #7c3aed;  /* fiolet */
+  --aq-color-no2:  #eab308;  /* żółty */
+  --aq-color-so2:  #f43f5e;  /* róż/czerwony */
+  --aq-color-co:   #2563eb;  /* niebieski 2 */
+  --aq-color-co2:  #10b981;  /* zielony */
+  --aq-color-o3:   #22c55e;  /* zielony 2 */
+  --aq-color-ch4:  #6b7280;  /* szary */
+}
+
+.muted { opacity: .75; font-weight: 500; }
+
+.state {
+  padding: 12px 4px;
+  font-weight: 600;
+  &.error { color: #b91c1c; }
+}
+
+/* Pasek średnich nad każdym wykresem */
+.avg-bar {
+  margin: 8px 0 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+
+  .title {
+    font-weight: 700;
+    margin-right: 6px;
+    color: #000;
+  }
+}
+
+/* Kolorowe chipy zgodnie z klasami AQI */
+.chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #fff;
+
+  &.aqi-verygood { background: #17a34a; }
+  &.aqi-good     { background: #22c55e; }
+  &.aqi-medium   { background: #eab308; }
+  &.aqi-low      { background: #f97316; }
+  &.aqi-bad      { background: #ef4444; }
+  &.aqi-unknown  { background: #94a3b8; }
+}
+
+/* Kontener na wykres — pozwala na przewijanie w poziomie na wąskich ekranach */
+.chart-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* odstęp między canvasami */
+canvas {
+  margin-bottom: 14px;
+  display: block;
+  width: 100%;
+}
+
+/* Mobile drobne usprawnienia */
+@media (max-width: 600px) {
+  .avg-bar { gap: 6px 8px; }
+  .chip { font-size: 12px; padding: 3px 8px; }
+}
