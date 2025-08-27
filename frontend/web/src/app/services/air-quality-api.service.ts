@@ -12,7 +12,6 @@ export class AirQualityApiService {
     return new HttpParams().set('from', fromISO).set('to', toISO);
   }
 
-  /** ALWAYS: fetch from Open-Meteo -> upsert Mongo -> return fetched points + averages */
   live(locationId: string, fromISO: string, toISO: string): Observable<AirQualitySeriesDto> {
     return this.http.post<AirQualitySeriesDto>(
       `${this.baseUrl}/live/${encodeURIComponent(locationId)}`,
@@ -21,7 +20,6 @@ export class AirQualityApiService {
     );
   }
 
-  /** Read-only DB history */
   history(locationId: string, fromISO: string, toISO: string): Observable<AirQualitySeriesDto> {
     return this.http.get<AirQualitySeriesDto>(
       `${this.baseUrl}/history/${encodeURIComponent(locationId)}`,

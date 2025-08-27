@@ -4,13 +4,11 @@
   </mat-card-title>
 
   <mat-card-content>
-    <!-- LOADING / ERROR -->
     <div *ngIf="loading" class="state">Ładowanie…</div>
     <div *ngIf="!loading && error" class="state error">{{ error }}</div>
 
     <ng-container *ngIf="!loading && !error && series as s">
 
-      <!-- AVG BAR: PM + UV -->
       <div class="avg-bar">
         <span class="title">Średnie (PM & UV)</span>
 
@@ -27,7 +25,6 @@
         </span>
       </div>
 
-      <!-- CHART 1: PM + UV (BAR) -->
       <div class="chart-wrap" aria-label="Wykres słupkowy PM i UV">
         <canvas
           baseChart
@@ -37,7 +34,6 @@
         </canvas>
       </div>
 
-      <!-- AVG BAR: Gases -->
       <div class="avg-bar">
         <span class="title">Średnie (Gazy)</span>
 
@@ -50,7 +46,6 @@
 
       </div>
 
-      <!-- CHART 2: Gases (BAR) -->
       <div class="chart-wrap" aria-label="Wykres słupkowy gazów">
         <canvas
           baseChart

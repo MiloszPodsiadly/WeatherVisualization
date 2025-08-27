@@ -43,7 +43,6 @@ export class AirQualityComponent implements OnInit {
     ch4:  '#6b7280'
   };
 
-  // BAR CHARTS
   pmUvData:  ChartData<'bar'> = { labels: [], datasets: [] };
   gasesData: ChartData<'bar'> = { labels: [], datasets: [] };
 
@@ -80,14 +79,12 @@ export class AirQualityComponent implements OnInit {
     });
   }
 
-  // ---------- charts (BAR) ----------
   private buildCharts(points: AirQualityPointDto[]) {
     const labels = points.map(p => new Date(p.time));
 
     const vals = <K extends keyof AirQualityPointDto>(k: K) =>
       points.map(p => (p[k] as unknown as number | null | undefined) ?? null);
 
-    // PM + UV
     const pm10 = vals('pm10');
     const pm25 = vals('pm25');
     const uv   = vals('uv');
@@ -105,7 +102,6 @@ export class AirQualityComponent implements OnInit {
     ];
     this.pmUvData = { labels, datasets: pmUvSets };
 
-    // Gases
     const no2 = vals('no2');
     const so2 = vals('so2');
     const co  = vals('co');
@@ -145,7 +141,6 @@ export class AirQualityComponent implements OnInit {
         }
       },
       scales: {
-        // TS-typing dla 'time' w bar chart bywa zbyt restrykcyjne → rzutujemy oś
         x: { type: 'time', time: { unit: 'hour' } } as any,
         y:  { position: 'left',  title: { display: true, text: 'µg/m³' } },
         y1: { position: 'right', title: { display: true, text: 'UV Index' }, grid: { drawOnChartArea: false } }
@@ -181,8 +176,6 @@ export class AirQualityComponent implements OnInit {
     };
   }
 
-
-  // ---------- helpers (avg chips itd.) ----------
   avgOf(metric: Metric): number | null {
     const a = this.series?.averages;
     return a ? (a as any)[metric] ?? null : null;
