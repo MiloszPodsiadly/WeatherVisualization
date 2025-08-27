@@ -33,3 +33,28 @@ export interface WeatherHistoryResponseDto {
   points: WeatherPointDto[];
   source: string;
 }
+export interface AirQualityPointDto {
+  time: string;
+  pm10?: number | null;
+  pm25?: number | null;
+  co?: number | null;
+  co2?: number | null;
+  no2?: number | null;
+  so2?: number | null;
+  o3?: number | null;
+  ch4?: number | null;
+  uv?: number | null;
+}
+
+export interface AirQualityAveragesDto {
+  pm10?: number | null; pm25?: number | null;
+  co?: number | null;   co2?: number | null;
+  no2?: number | null;  so2?: number | null;
+  o3?: number | null;   ch4?: number | null;
+  uv?: number | null;
+}
+
+export interface AirQualitySeriesDto {
+  averages: AirQualityAveragesDto;
+  points: AirQualityPointDto[];
+}

@@ -1,0 +1,60 @@
+<mat-card>
+  <mat-card-title>
+    Air Quality — <span class="muted">details (last 24h)</span>
+  </mat-card-title>
+
+  <mat-card-content>
+    <div *ngIf="loading" class="state">Ładowanie…</div>
+    <div *ngIf="!loading && error" class="state error">{{ error }}</div>
+
+    <ng-container *ngIf="!loading && !error && series as s">
+
+      <div class="avg-bar">
+        <span class="title">Średnie (PM & UV)</span>
+
+        <span class="chip" [ngClass]="chipClass('pm25', avgOf('pm25'))">
+        PM2.5: {{ format(avgOf('pm25'), 'pm25') }}
+        </span>
+
+        <span class="chip" [ngClass]="chipClass('pm10', avgOf('pm10'))">
+        PM10: {{ format(avgOf('pm10'), 'pm10') }}
+        </span>
+
+        <span class="chip" [ngClass]="chipClass('uv', avgOf('uv'))">
+        UV: {{ format(avgOf('uv'), 'uv') }}
+        </span>
+      </div>
+
+      <div class="chart-wrap" aria-label="Wykres słupkowy PM i UV">
+        <canvas
+          baseChart
+          [data]="pmUvData"
+          [options]="pmUvOptions"
+          chartType="bar">
+        </canvas>
+      </div>
+
+      <div class="avg-bar">
+        <span class="title">Średnie (Gazy)</span>
+
+        <span class="chip" [ngClass]="chipClass('no2', avgOf('no2'))">NO₂: {{ format(avgOf('no2'), 'no2') }}</span>
+        <span class="chip" [ngClass]="chipClass('so2', avgOf('so2'))">SO₂: {{ format(avgOf('so2'), 'so2') }}</span>
+        <span class="chip" [ngClass]="chipClass('co',  avgOf('co'))">CO: {{ format(avgOf('co'), 'co') }}</span>
+        <span class="chip" [ngClass]="chipClass('co2', avgOf('co2'))">CO₂: {{ format(avgOf('co2'), 'co2') }}</span>
+        <span class="chip" [ngClass]="chipClass('o3',  avgOf('o3'))">O₃: {{ format(avgOf('o3'), 'o3') }}</span>
+        <span class="chip" [ngClass]="chipClass('ch4', avgOf('ch4'))">CH₄: {{ format(avgOf('ch4'), 'ch4') }}</span>
+
+      </div>
+
+      <div class="chart-wrap" aria-label="Wykres słupkowy gazów">
+        <canvas
+          baseChart
+          [data]="gasesData"
+          [options]="gasesOptions"
+          chartType="bar">
+        </canvas>
+      </div>
+
+    </ng-container>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,64 @@
+:root {
+  --aq-color-pm10: #3b82f6;
+  --aq-color-pm25: #f59e0b;
+  --aq-color-uv:   #7c3aed;
+  --aq-color-no2:  #eab308;
+  --aq-color-so2:  #f43f5e;
+  --aq-color-co:   #2563eb;
+  --aq-color-co2:  #10b981;
+  --aq-color-o3:   #22c55e;
+  --aq-color-ch4:  #6b7280;
+}
+
+.muted { opacity: .75; font-weight: 500; }
+
+.state {
+  padding: 12px 4px;
+  font-weight: 600;
+  &.error { color: #b91c1c; }
+}
+
+.avg-bar {
+  margin: 8px 0 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+
+  .title {
+    font-weight: 700;
+    margin-right: 6px;
+    color: #000;
+  }
+}
+
+.chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #fff;
+
+  &.aqi-verygood { background: #17a34a; }
+  &.aqi-good     { background: #22c55e; }
+  &.aqi-medium   { background: #eab308; }
+  &.aqi-low      { background: #f97316; }
+  &.aqi-bad      { background: #ef4444; }
+  &.aqi-unknown  { background: #94a3b8; }
+}
+
+.chart-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+canvas {
+  margin-bottom: 14px;
+  display: block;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .avg-bar { gap: 6px 8px; }
+  .chip { font-size: 12px; padding: 3px 8px; }
+}
