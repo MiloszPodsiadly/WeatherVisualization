@@ -50,13 +50,35 @@
       </span>
     </mat-card-subtitle>
 
+    <!-- Air Quality: now -->
+    <div class="aqi-row">
+      <span class="label" aria-label="Air Quality: now">Air Quality: now</span>
+
+      <span
+        class="aqi-pill"
+        [ngClass]="getAirQualityLabel(c.data.pm2_5 ?? null, 'pm25').css"
+        aria-label="Air quality now PM2.5"
+      >
+        PM2.5 – {{ getAirQualityLabel(c.data.pm2_5 ?? null, 'pm25').text }}
+      </span>
+
+      <span
+        class="aqi-pill"
+        [ngClass]="getAirQualityLabel(c.data.pm10 ?? null, 'pm10').css"
+        aria-label="Air quality now PM10"
+      >
+        PM10 – {{ getAirQualityLabel(c.data.pm10 ?? null, 'pm10').text }}
+      </span>
+    </div>
+
+    <!-- Air Quality: 24h -->
     <div class="aqi-row" *ngIf="averages">
-      <span class="label">Air Quality:</span>
+      <span class="label">Air Quality: 24h</span>
 
       <span
         class="aqi-pill"
         [ngClass]="getAirQualityLabel(averages.pm25, 'pm25').css"
-        aria-label="Air quality PM2.5"
+        aria-label="Air quality 24h average PM2.5"
       >
         PM2.5 – {{ getAirQualityLabel(averages.pm25, 'pm25').text }}
       </span>
@@ -64,14 +86,17 @@
       <span
         class="aqi-pill"
         [ngClass]="getAirQualityLabel(averages.pm10, 'pm10').css"
-        aria-label="Air quality PM10"
+        aria-label="Air quality 24h average PM10"
       >
         PM10 – {{ getAirQualityLabel(averages.pm10, 'pm10').text }}
       </span>
     </div>
 
-    <mat-card-actions>
+    <mat-card-actions class="actions">
       <a mat-button [routerLink]="['/history', c.location.id]">Full history</a>
+      <a mat-button [routerLink]="['/air-quality', c.location.id]" aria-label="Open detailed air quality charts">
+        Air Quality description
+      </a>
     </mat-card-actions>
   </mat-card>
 </ng-container>

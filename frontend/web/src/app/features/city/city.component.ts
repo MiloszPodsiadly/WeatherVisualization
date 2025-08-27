@@ -14,18 +14,11 @@ type LinePoint = number | ScatterDataPoint | null;
 @Component({
   standalone: true,
   selector: 'app-city',
-  imports: [
-    CommonModule,
-    RouterLink,
-    MatCardModule,
-    MatButtonModule,
-    NgChartsModule
-  ],
+  imports: [CommonModule, RouterLink, MatCardModule, MatButtonModule, NgChartsModule],
   templateUrl: './city.component.html',
   styleUrls: ['./city.component.scss']
 })
 export class CityComponent implements OnInit {
-
   private route = inject(ActivatedRoute);
   private api = inject(WeatherApiService);
 
@@ -52,16 +45,13 @@ export class CityComponent implements OnInit {
             if (label.includes('Temperature')) return `🌡 Temp: ${v} °C`;
             if (label.includes('PM2.5'))       return `PM2.5: ${v} µg/m³`;
             if (label.includes('PM10'))        return `PM10: ${v} µg/m³`;
-
             return `${label}: ${v}`;
           },
           labelTextColor: (ctx: TooltipItem<'line'>) => {
             const label = ctx.dataset?.label ?? '';
-
             if (label.includes('Temperature')) return 'red';
             if (label.includes('PM2.5'))       return 'orange';
             if (label.includes('PM10'))        return 'blue';
-
             return '#000';
           }
         },
@@ -87,10 +77,8 @@ export class CityComponent implements OnInit {
     }
   };
 
-
   ngOnInit(): void {
     this.locationId = this.route.snapshot.paramMap.get('id')!;
-
     this.api.current(this.locationId).subscribe(res => this.current = res);
 
     const to = new Date();
@@ -113,30 +101,9 @@ export class CityComponent implements OnInit {
         );
 
         const datasets: ChartDataset<'line', LinePoint[]>[] = [
-          {
-            label: 'Temperature (°C)',
-            data: tempPoints,
-            borderColor: 'red',
-            pointRadius: 0,
-            tension: 0.2,
-            yAxisID: 'y'
-          } as ChartDataset<'line', LinePoint[]>,
-          {
-            label: 'PM10 (µg/m³)',
-            data: pm10Points,
-            borderColor: 'blue',
-            pointRadius: 0,
-            tension: 0.2,
-            yAxisID: 'y2'
-          } as ChartDataset<'line', LinePoint[]>,
-          {
-            label: 'PM2.5 (µg/m³)',
-            data: pm25Points,
-            borderColor: 'orange',
-            pointRadius: 0,
-            tension: 0.2,
-            yAxisID: 'y2'
-          } as ChartDataset<'line', LinePoint[]>
+          { label: 'Temperature (°C)', data: tempPoints, borderColor: 'red', pointRadius: 0, tension: 0.2, yAxisID: 'y' } as ChartDataset<'line', LinePoint[]>,
+          { label: 'PM10 (µg/m³)',     data: pm10Points, borderColor: 'blue', pointRadius: 0, tension: 0.2, yAxisID: 'y2' } as ChartDataset<'line', LinePoint[]>,
+          { label: 'PM2.5 (µg/m³)',    data: pm25Points, borderColor: 'orange', pointRadius: 0, tension: 0.2, yAxisID: 'y2' } as ChartDataset<'line', LinePoint[]>
         ];
 
         this.lineData = { datasets };
@@ -155,6 +122,7 @@ export class CityComponent implements OnInit {
         };
       });
   }
+
   getAirQualityLabel(value: number | null, type: 'pm25' | 'pm10'): { text: string, css: string } {
     if (value == null) return { text: '—', css: 'aqi-unknown' };
 
