@@ -16,7 +16,6 @@ public class AirQualityController {
         this.service = service;
     }
 
-    /** ALWAYS: fetch from Open-Meteo -> upsert Mongo -> return fetched points + averages. */
     @PostMapping("/live/{locationId}")
     public AirQualitySeriesDto live(
             @PathVariable String locationId,
@@ -26,7 +25,6 @@ public class AirQualityController {
         return service.live(locationId, Instant.parse(from), Instant.parse(to));
     }
 
-    /** Optional: pure DB history (no external fetch). */
     @GetMapping("/history/{locationId}")
     public AirQualitySeriesDto historyOnly(
             @PathVariable String locationId,

@@ -43,14 +43,12 @@ public class AirQualityService {
         this.mapper = mapper;
     }
 
-    /** ALWAYS: fetch from Open-Meteo -> upsert -> return fetched points (not DB). */
     public AirQualitySeriesDto live(String locationId, Instant from, Instant to) {
         Location loc = locations.findById(locationId)
                 .orElseThrow(() -> new IllegalArgumentException("Location not found: " + locationId));
 
         List<AirQualityPointDto> fetched = fetchFromOpenMeteo(latOf(loc), lonOf(loc), from, to);
 
-        // persist for history, but do not re-read from DB
         if (!fetched.isEmpty()) {
             upsertBatch(locationId, fetched);
         }
@@ -59,7 +57,6 @@ public class AirQualityService {
         return new AirQualitySeriesDto(averages, fetched);
     }
 
-    /** Optional: read-only DB history (kept for diagnostics/tools/UIs). */
     public List<AirQualityPointDto> history(String locationId, Instant from, Instant to) {
         Query q = new Query(Criteria.where("locationId").is(locationId)
                 .and("recordedAt").gte(from).lte(to));
@@ -71,7 +68,6 @@ public class AirQualityService {
         return out;
     }
 
-    /** Fetch hourly AQ series from Open-Meteo. */
     public List<AirQualityPointDto> fetchFromOpenMeteo(double lat, double lon, Instant from, Instant to) {
         String url = buildUrl(lat, lon, from, to);
         String body = http.get().uri(url).retrieve().body(String.class);
@@ -109,7 +105,6 @@ public class AirQualityService {
         }
     }
 
-    /** Bulk UPSERT by (locationId, recordedAt). */
     public int upsertBatch(String locationId, List<AirQualityPointDto> points) {
         if (points == null || points.isEmpty()) return 0;
 
@@ -139,7 +134,6 @@ public class AirQualityService {
         return points.size();
     }
 
-    /** Averages (null-safe), rounded to 1 decimal. */
     public AirQualityAveragesDto computeAverages(List<AirQualityPointDto> pts) {
         return new AirQualityAveragesDto(
                 avg(pts.stream().map(AirQualityPointDto::pm10).toList()),
@@ -153,8 +147,6 @@ public class AirQualityService {
                 avg(pts.stream().map(AirQualityPointDto::uv).toList())
         );
     }
-
-    // ---------- helpers ----------
 
     private static String buildUrl(double lat, double lon, Instant from, Instant to) {
         DateTimeFormatter ISO = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneOffset.UTC);
@@ -188,7 +180,6 @@ public class AirQualityService {
         return (v == null || v.isNaN() || v.isInfinite()) ? null : v;
     }
 
-    // Open-Meteo time format: yyyy-MM-dd'T'HH:mm[[:ss]['Z']]
     private static final DateTimeFormatter OM_HOURLY =
             new DateTimeFormatterBuilder()
                     .appendPattern("yyyy-MM-dd'T'HH:mm")

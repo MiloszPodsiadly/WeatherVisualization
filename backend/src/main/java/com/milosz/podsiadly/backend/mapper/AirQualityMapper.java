@@ -23,7 +23,6 @@ public class AirQualityMapper {
         );
     }
 
-    /** Build a new document from DTO + locationId (for inserts/upserts). */
     public AirQualityMeasurement fromDto(String locationId, AirQualityPointDto dto) {
         if (dto == null) return null;
         return AirQualityMeasurement.builder()
