@@ -4,13 +4,13 @@
   </mat-card-title>
 
   <mat-card-content>
-    <div *ngIf="loading" class="state">Ładowanie…</div>
+    <div *ngIf="loading" class="state">Loading…</div>
     <div *ngIf="!loading && error" class="state error">{{ error }}</div>
 
     <ng-container *ngIf="!loading && !error && series as s">
 
       <div class="avg-bar">
-        <span class="title">Średnie (PM & UV)</span>
+        <span class="title">Averages (PM & UV)</span>
 
         <span class="chip" [ngClass]="chipClass('pm25', avgOf('pm25'))">
         PM2.5: {{ format(avgOf('pm25'), 'pm25') }}
@@ -25,7 +25,7 @@
         </span>
       </div>
 
-      <div class="chart-wrap" aria-label="Wykres słupkowy PM i UV">
+      <div class="chart-wrap" aria-label="PM and UV bar chart">
         <canvas
           baseChart
           [data]="pmUvData"
@@ -35,7 +35,7 @@
       </div>
 
       <div class="avg-bar">
-        <span class="title">Średnie (Gazy)</span>
+        <span class="title">Averages (Gases)</span>
 
         <span class="chip" [ngClass]="chipClass('no2', avgOf('no2'))">NO₂: {{ format(avgOf('no2'), 'no2') }}</span>
         <span class="chip" [ngClass]="chipClass('so2', avgOf('so2'))">SO₂: {{ format(avgOf('so2'), 'so2') }}</span>
@@ -46,7 +46,7 @@
 
       </div>
 
-      <div class="chart-wrap" aria-label="Wykres słupkowy gazów">
+      <div class="chart-wrap" aria-label="Gas bar chart">
         <canvas
           baseChart
           [data]="gasesData"
