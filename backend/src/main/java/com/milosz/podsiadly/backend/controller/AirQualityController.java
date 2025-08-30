@@ -4,6 +4,7 @@ import com.milosz.podsiadly.backend.dto.AirQualitySeriesDto;
 import com.milosz.podsiadly.backend.service.AirQualityService;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.time.Instant;
 
 @RestController
@@ -16,22 +17,18 @@ public class AirQualityController {
         this.service = service;
     }
 
-    @PostMapping("/live/{locationId}")
-    public AirQualitySeriesDto live(
-            @PathVariable String locationId,
-            @RequestParam String from,
-            @RequestParam String to
-    ) {
-        return service.live(locationId, Instant.parse(from), Instant.parse(to));
+    @PostMapping("/live/{locationId}/last24h")
+    public AirQualitySeriesDto liveLast24h(@PathVariable String locationId) {
+        Instant to   = Instant.now();
+        Instant from = to.minus(Duration.ofHours(24));
+        return service.live(locationId, from, to);
     }
 
-    @GetMapping("/history/{locationId}")
-    public AirQualitySeriesDto historyOnly(
-            @PathVariable String locationId,
-            @RequestParam String from,
-            @RequestParam String to
-    ) {
-        var points = service.history(locationId, Instant.parse(from), Instant.parse(to));
+    @GetMapping("/history/{locationId}/last24h")
+    public AirQualitySeriesDto historyLast24h(@PathVariable String locationId) {
+        Instant to   = Instant.now();
+        Instant from = to.minus(Duration.ofHours(24));
+        var points   = service.history(locationId, from, to);
         var averages = service.computeAverages(points);
         return new AirQualitySeriesDto(averages, points);
     }

@@ -15,17 +15,40 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 
 @Service
 public class AirQualityService {
+
+    private static final String API_BASE =
+            "https://air-quality-api.open-meteo.com/v1/air-quality";
+
+    private static final String HOURLY_PARAMS =
+            "pm10,pm2_5,carbon_monoxide,carbon_dioxide," +
+                    "nitrogen_dioxide,sulphur_dioxide,ozone,uv_index,methane";
+
+    private static final DateTimeFormatter ISO_UTC =
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneOffset.UTC);
+
+    private static final DateTimeFormatter OM_HOURLY =
+            new DateTimeFormatterBuilder()
+                    .appendPattern("yyyy-MM-dd'T'HH:mm")
+                    .optionalStart().appendPattern(":ss").optionalEnd()
+                    .optionalStart().appendLiteral('Z').optionalEnd()
+                    .toFormatter();
 
     private final RestClient http;
     private final MongoTemplate mongo;
@@ -44,52 +67,86 @@ public class AirQualityService {
     }
 
     public AirQualitySeriesDto live(String locationId, Instant from, Instant to) {
+        requireValidWindow(from, to);
+
         Location loc = locations.findById(locationId)
                 .orElseThrow(() -> new IllegalArgumentException("Location not found: " + locationId));
 
         List<AirQualityPointDto> fetched = fetchFromOpenMeteo(latOf(loc), lonOf(loc), from, to);
+        if (!fetched.isEmpty()) upsertBatch(locationId, fetched);
 
-        if (!fetched.isEmpty()) {
-            upsertBatch(locationId, fetched);
+        List<AirQualityPointDto> dbPoints = history(locationId, from, to);
+        Map<Instant, AirQualityPointDto> byTime = new java.util.HashMap<>();
+        for (var p : dbPoints) byTime.put(p.time(), p);
+        for (var p : fetched)  byTime.put(p.time(), p);
+
+        if (byTime.isEmpty()) {
+            return new AirQualitySeriesDto(new AirQualityAveragesDto(null,null,null,null,null,null,null,null,null), List.of());
         }
 
-        AirQualityAveragesDto averages = computeAverages(fetched);
-        return new AirQualitySeriesDto(averages, fetched);
+        Instant latest = byTime.keySet().stream().max(Instant::compareTo).get()
+                .truncatedTo(java.time.temporal.ChronoUnit.HOURS);
+        Instant start  = latest.minus(23, java.time.temporal.ChronoUnit.HOURS);
+
+        java.util.List<AirQualityPointDto> series = new java.util.ArrayList<>(24);
+        for (Instant t = start; !t.isAfter(latest); t = t.plus(1, java.time.temporal.ChronoUnit.HOURS)) {
+            AirQualityPointDto p = byTime.get(t);
+            series.add(p != null ? p
+                    : new AirQualityPointDto(t, null,null,null,null,null,null,null,null,null));
+        }
+
+        AirQualityAveragesDto averages = computeAverages(series);
+        return new AirQualitySeriesDto(averages, series);
     }
 
     public List<AirQualityPointDto> history(String locationId, Instant from, Instant to) {
+        if (!isValidWindow(from, to)) return List.of();
+
         Query q = new Query(Criteria.where("locationId").is(locationId)
                 .and("recordedAt").gte(from).lte(to));
         q.with(Sort.by(Sort.Direction.ASC, "recordedAt"));
 
         var docs = mongo.find(q, AirQualityMeasurement.class);
-        List<AirQualityPointDto> out = new ArrayList<>(docs.size());
-        for (var e : docs) out.add(mapper.toDto(e));
-        return out;
+        return docs.stream().map(mapper::toDto).collect(Collectors.toList());
     }
 
     public List<AirQualityPointDto> fetchFromOpenMeteo(double lat, double lon, Instant from, Instant to) {
-        String url = buildUrl(lat, lon, from, to);
-        String body = http.get().uri(url).retrieve().body(String.class);
+        Instant start = from.truncatedTo(ChronoUnit.MINUTES);
+        Instant end   = to.truncatedTo(ChronoUnit.MINUTES);
+
+        String url = buildUrl(lat, lon, start, end);
+
+        ResponseEntity<String> resp = http.get().uri(url).retrieve().toEntity(String.class);
+        String body = Objects.requireNonNullElse(resp.getBody(), "{}");
+
+        Instant apiNow = null;
+        try {
+            String dateHeader = resp.getHeaders().getFirst("Date");
+            if (dateHeader != null) apiNow = ZonedDateTime.parse(dateHeader, RFC_1123_DATE_TIME).toInstant();
+        } catch (Exception ignored) { /* safe to ignore; frontend clamps too */ }
 
         try {
             JsonNode hourly = om.readTree(body).path("hourly");
 
-            List<String> times   = toStrList(hourly.path("time"));
-            List<Double> pm10    = toDblList(hourly.path("pm10"));
-            List<Double> pm25    = toDblList(hourly.path("pm2_5"));
-            List<Double> co      = toDblList(hourly.path("carbon_monoxide"));
-            List<Double> co2     = toDblList(hourly.path("carbon_dioxide"));
-            List<Double> no2     = toDblList(hourly.path("nitrogen_dioxide"));
-            List<Double> so2     = toDblList(hourly.path("sulphur_dioxide"));
-            List<Double> o3      = toDblList(hourly.path("ozone"));
-            List<Double> uv      = toDblList(hourly.path("uv_index"));
-            List<Double> ch4     = toDblList(hourly.path("methane"));
+            List<String> times = toStrList(hourly.path("time"));
+            List<Double> pm10  = toDblList(hourly.path("pm10"));
+            List<Double> pm25  = toDblList(hourly.path("pm2_5"));
+            List<Double> co    = toDblList(hourly.path("carbon_monoxide"));
+            List<Double> co2   = toDblList(hourly.path("carbon_dioxide"));
+            List<Double> no2   = toDblList(hourly.path("nitrogen_dioxide"));
+            List<Double> so2   = toDblList(hourly.path("sulphur_dioxide"));
+            List<Double> o3    = toDblList(hourly.path("ozone"));
+            List<Double> uv    = toDblList(hourly.path("uv_index"));
+            List<Double> ch4   = toDblList(hourly.path("methane"));
 
             int n = times.size();
             List<AirQualityPointDto> out = new ArrayList<>(n);
+
             for (int i = 0; i < n; i++) {
                 Instant t = parseUtcInstant(times.get(i));
+                if (t.isBefore(start) || t.isAfter(end)) continue;
+                if (apiNow != null && t.isAfter(apiNow)) continue;
+
                 out.add(new AirQualityPointDto(
                         t,
                         pick(pm10, i), pick(pm25, i),
@@ -135,6 +192,7 @@ public class AirQualityService {
     }
 
     public AirQualityAveragesDto computeAverages(List<AirQualityPointDto> pts) {
+        if (pts == null) pts = List.of();
         return new AirQualityAveragesDto(
                 avg(pts.stream().map(AirQualityPointDto::pm10).toList()),
                 avg(pts.stream().map(AirQualityPointDto::pm25).toList()),
@@ -148,16 +206,32 @@ public class AirQualityService {
         );
     }
 
+    private static void requireValidWindow(Instant from, Instant to) {
+        if (!isValidWindow(from, to)) {
+            throw new IllegalArgumentException("Invalid time window");
+        }
+    }
+
+    private static boolean isValidWindow(Instant from, Instant to) {
+        return from != null && to != null && from.isBefore(to);
+    }
+
     private static String buildUrl(double lat, double lon, Instant from, Instant to) {
-        DateTimeFormatter ISO = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneOffset.UTC);
-        return "https://air-quality-api.open-meteo.com/v1/air-quality"
-                + "?latitude=" + lat
-                + "&longitude=" + lon
-                + "&hourly=pm10,pm2_5,carbon_monoxide,carbon_dioxide,"
-                + "nitrogen_dioxide,sulphur_dioxide,ozone,uv_index,methane"
-                + "&timezone=UTC"
-                + "&start=" + ISO.format(from)
-                + "&end="   + ISO.format(to);
+        int pastDays = 0;
+        LocalDate dFrom = ZonedDateTime.ofInstant(from, ZoneOffset.UTC).toLocalDate();
+        LocalDate dTo   = ZonedDateTime.ofInstant(to,   ZoneOffset.UTC).toLocalDate();
+        if (dFrom.isBefore(dTo)) pastDays = 2;
+
+        StringBuilder sb = new StringBuilder(API_BASE)
+                .append("?latitude=").append(lat)
+                .append("&longitude=").append(lon)
+                .append("&hourly=").append(HOURLY_PARAMS)
+                .append("&timezone=UTC")
+                .append("&start=").append(ISO_UTC.format(from))
+                .append("&end=").append(ISO_UTC.format(to));
+
+        if (pastDays > 0) sb.append("&past_days=").append(pastDays);
+        return sb.toString();
     }
 
     private static List<String> toStrList(JsonNode arr) {
@@ -175,17 +249,10 @@ public class AirQualityService {
     }
 
     private static Double pick(List<Double> list, int i) {
-        if (list == null || i >= list.size()) return null;
+        if (list == null || i < 0 || i >= list.size()) return null;
         Double v = list.get(i);
         return (v == null || v.isNaN() || v.isInfinite()) ? null : v;
     }
-
-    private static final DateTimeFormatter OM_HOURLY =
-            new DateTimeFormatterBuilder()
-                    .appendPattern("yyyy-MM-dd'T'HH:mm")
-                    .optionalStart().appendPattern(":ss").optionalEnd()
-                    .optionalStart().appendLiteral('Z').optionalEnd()
-                    .toFormatter();
 
     private static Instant parseUtcInstant(String s) {
         return LocalDateTime.parse(s, OM_HOURLY).toInstant(ZoneOffset.UTC);
@@ -197,20 +264,41 @@ public class AirQualityService {
         for (Double v : values) {
             if (v != null && !v.isNaN() && !v.isInfinite()) { sum += v; n++; }
         }
-        return n == 0 ? null : Math.round((sum / n) * 10.0) / 10.0;
+        if (n == 0) return null;
+        return new BigDecimal(sum / n).setScale(1, RoundingMode.HALF_UP).doubleValue();
     }
 
     private static double latOf(Location loc) {
         try { return (double) Location.class.getMethod("getLatitude").invoke(loc); }
-        catch (Exception ignore) { }
+        catch (Exception ignore) { /* fallthrough */ }
         try { return (double) Location.class.getMethod("getLat").invoke(loc); }
         catch (Exception e) { throw new IllegalStateException("Location must expose getLatitude() or getLat()"); }
     }
 
     private static double lonOf(Location loc) {
         try { return (double) Location.class.getMethod("getLongitude").invoke(loc); }
-        catch (Exception ignore) { }
+        catch (Exception ignore) { /* fallthrough */ }
         try { return (double) Location.class.getMethod("getLon").invoke(loc); }
         catch (Exception e) { throw new IllegalStateException("Location must expose getLongitude() or getLon()"); }
+    }
+
+    private static List<AirQualityPointDto> buildContinuousHourlySeries(
+            Map<Instant, AirQualityPointDto> byTime, Instant from, Instant to) {
+
+        List<AirQualityPointDto> out = new ArrayList<>();
+        Instant startH = from.truncatedTo(ChronoUnit.HOURS);
+        Instant endH   = to.truncatedTo(ChronoUnit.HOURS);
+
+        for (Instant t = startH; !t.isAfter(endH); t = t.plus(1, ChronoUnit.HOURS)) {
+            AirQualityPointDto p = byTime.get(t);
+            if (p != null) {
+                out.add(p);
+            } else {
+                out.add(new AirQualityPointDto(
+                        t, null, null, null, null, null, null, null, null, null
+                ));
+            }
+        }
+        return out;
     }
 }
