@@ -127,19 +127,21 @@ export class CityComponent implements OnInit {
     if (value == null) return { text: '—', css: 'aqi-unknown' };
 
     if (type === 'pm25') {
-      if (value <= 12) return { text: 'Very good', css: 'aqi-verygood' };
+      if (value <= 10) return { text: 'Very good', css: 'aqi-verygood' };
       if (value <= 20) return { text: 'Good', css: 'aqi-good' };
       if (value <= 25) return { text: 'Medium', css: 'aqi-medium' };
       if (value <= 50) return { text: 'Low', css: 'aqi-low' };
-      return { text: 'Bad', css: 'aqi-bad' };
+      if (value <= 75) return { text: 'Bad', css: 'aqi-bad' };
+      return { text: 'Extremely bad', css: 'aqi-extremelybad' };
     }
 
     if (type === 'pm10') {
       if (value <= 20) return { text: 'Very good', css: 'aqi-verygood' };
-      if (value <= 50) return { text: 'Good', css: 'aqi-good' };
-      if (value <= 80) return { text: 'Medium', css: 'aqi-medium' };
-      if (value <= 110) return { text: 'Low', css: 'aqi-low' };
-      return { text: 'Bad', css: 'aqi-bad' };
+      if (value <= 35) return { text: 'Good', css: 'aqi-good' };
+      if (value <= 50) return { text: 'Medium', css: 'aqi-medium' };
+      if (value <= 100) return { text: 'Low', css: 'aqi-low' };
+      if (value <= 200) return { text: 'Bad', css: 'aqi-bad' };
+      return { text: 'Extremely bad', css: 'aqi-extremelybad' };
     }
 
     return { text: '—', css: 'aqi-unknown' };
